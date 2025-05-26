@@ -114,7 +114,7 @@ export const Contact = () => {
       whileInView="visible"
       variants={containerVariants}
       viewport={{ once: true }}
-      className="container-fluid mt-4 rounded-2xl bg-white text-black py-20"
+      className="container-fluid mt-4 mb-4 rounded-2xl bg-white text-black py-20"
     >
       <div className="container px-4">
         <motion.div 
@@ -237,7 +237,7 @@ export const Contact = () => {
                 <LocationOn className="text-blue-600 text-4xl mr-4 mt-1" />
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800">Our Office</h3>
-                  <p className="text-gray-600">123 Street, New York, USA</p>
+                  <p className="text-gray-600">KG 042 Ave, Kigali Economic Zone, Rwanda</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -251,7 +251,7 @@ export const Contact = () => {
                 <Phone className="text-blue-600 text-4xl mr-4 mt-1" />
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800">Call Us</h3>
-                  <p className="text-gray-600">+012 345 6789</p>
+                  <p className="text-gray-600">+250 787 944 577</p>
                 </div>
               </div>
 

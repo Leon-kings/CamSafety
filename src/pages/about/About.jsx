@@ -162,7 +162,6 @@ export const About = () => {
               variants={itemVariants}
               whileHover={{ scale: 1.03 }}
               className="cursor-pointer"
-              onClick={handleLearnMore}
             >
               <motion.div
                 initial="hidden"
@@ -171,7 +170,7 @@ export const About = () => {
                 viewport={{ once: true }}
                 className={`${feature.bgColor} flex flex-col justify-center items-center text-center border-b-4 ${feature.borderColor} rounded-xl p-8 h-full min-h-[200px] shadow-lg transition-all duration-300 hover:shadow-xl`}
               >
-                {feature.icon}
+                <p className="text-white text-5xl mb-4">{feature.icon}</p>
                 <h4 className="text-white text-xl font-semibold mb-2">
                   {feature.title}
                 </h4>
@@ -229,7 +228,9 @@ export const About = () => {
                   className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
                   <div className="flex items-start">
-                    {service.icon}
+                    <span className="text-blue-600 mr-4 text-3xl">
+                      {service.icon}
+                    </span>
                     <div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-800">
                         {service.title}

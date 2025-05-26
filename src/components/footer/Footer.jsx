@@ -32,7 +32,7 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-gray-800 text-gray-200 py-12 px-4">
+    <footer className="bg-gray-800 text-gray-200 rounded-2xl py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Newsletter Subscription */}

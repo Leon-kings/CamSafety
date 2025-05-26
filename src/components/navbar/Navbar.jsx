@@ -179,16 +179,16 @@ export const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link href="/" className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link to={'/'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
                 Home
               </Link>
-              <Link href="/about" className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link to={'/6272/738A'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
                 About
               </Link>
-              <Link href="/services" className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link to={'/7812/18u91'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
                 Services
               </Link>
-              <Link href="/contact" className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link to={'/782130/93en032'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
                 Contact
               </Link>
               

@@ -106,9 +106,7 @@ export const Testimonials = () => {
       formDataToSend.append("profession", formData.profession);
       formDataToSend.append("rating", formData.rating);
       formDataToSend.append("testimonial", formData.testimonial);
-      if (formData.image) {
-        formDataToSend.append("image", formData.image);
-      }
+
 
       const response = await axios.post(
         "https://your-api-endpoint.com/testimonials",
@@ -133,7 +131,7 @@ export const Testimonials = () => {
         profession: "",
         rating: 5,
         testimonial: "",
-        image: null,
+        
       });
     } catch (error) {
       toast.error("Failed to submit testimonial. Please try again.", {
@@ -396,23 +394,6 @@ export const Testimonials = () => {
                   InputProps={{
                     startAdornment: <Message className="mr-2 text-gray-500" />,
                   }}
-                />
-              </Box>
-
-              <Box mb={4}>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Upload Your Photo (Optional)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
                 />
               </Box>
 

@@ -37,7 +37,6 @@ export const Services = () => {
     name: '',
     email: '',
     phone: '',
-    company: '',
     message: '',
     service: ''
   });
@@ -210,7 +209,6 @@ export const Services = () => {
           name: '',
           email: '',
           phone: '',
-          company: '',
           message: '',
           service: formData.service // Keep the service for potential follow-up
         });
@@ -262,7 +260,7 @@ export const Services = () => {
               <div className="p-8 text-center">
                 <motion.div 
                   whileHover={{ scale: 1.1 }}
-                  className="inline-block mb-6"
+                  className="inline-block mb-6 text-gray-300"
                 >
                   {service.icon}
                 </motion.div>
@@ -416,20 +414,6 @@ export const Services = () => {
                     onChange={handleInputChange}
                     InputProps={{
                       startAdornment: <Phone className="mr-2 text-gray-500" />,
-                    }}
-                  />
-                </Box>
-
-                <Box mb={3}>
-                  <TextField
-                    fullWidth
-                    label="Company (Optional)"
-                    variant="outlined"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    InputProps={{
-                      startAdornment: <Business className="mr-2 text-gray-500" />,
                     }}
                   />
                 </Box>

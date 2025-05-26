@@ -208,37 +208,4 @@ export const testimonials = [
     rating: 4,
   },
 ];
-export const blogData = [
-  {
-    id: 1,
-    title: "How to Choose the Right CCTV System for Your Business",
-    image: "img/blog-1.jpg",
-    date: { day: "01", month: "January" },
-    author: "Admin",
-    category: "Security Tips",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...",
-  },
-  {
-    id: 2,
-    title: "Top 5 Benefits of Professional Security Installation",
-    image: "img/blog-2.jpg",
-    date: { day: "15", month: "February" },
-    author: "Security Expert",
-    category: "Installation",
-    content:
-      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum...",
-  },
-  // Add more blog posts (at least 8 for pagination demo)
-  ...Array.from({ length: 6 }, (_, i) => ({
-    id: i + 3,
-    title: `Blog Post Title ${i + 3}`,
-    image: `img/blog-${i + 3}.jpg`,
-    date: { day: (i + 1).toString().padStart(2, "0"), month: "March" },
-    author: "Admin",
-    category: "Security News",
-    content: `This is sample content for blog post ${
-      i + 3
-    }. It would contain the full article text in a real implementation.`,
-  })),
-];
+

@@ -35,7 +35,6 @@ export const Hero = () => {
     name: '',
     email: '',
     phone: '',
-    company: '',
     service: '',
     message: ''
   });
@@ -83,7 +82,6 @@ export const Hero = () => {
         name: '',
         email: '',
         phone: '',
-        company: '',
         service: '',
         message: ''
       });
@@ -182,10 +180,10 @@ export const Hero = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => toast.info('Get Quote button clicked')}
+                  onClick={() => toast.info('Our expert technicians provide comprehensive CCTV installation services tailored to your specific requirements. We handle everything from site survey and camera placement to wiring and system configuration. Our installations include high-quality cameras with night vision, motion detection, and weatherproof housing for outdoor use.')}
                   className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg flex items-center justify-center"
                 >
-                  <Home className="mr-2" /> Get Quote
+                  <Home className="mr-2" /> Quote
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -279,20 +277,6 @@ export const Hero = () => {
                 onChange={handleInputChange}
                 InputProps={{
                   startAdornment: <Phone className="mr-2 text-gray-500" />,
-                }}
-              />
-            </Box>
-
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                label="Company (Optional)"
-                variant="outlined"
-                name="company"
-                value={formData.company}
-                onChange={handleInputChange}
-                InputProps={{
-                  startAdornment: <Business className="mr-2 text-gray-500" />,
                 }}
               />
             </Box>
