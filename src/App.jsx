@@ -15,8 +15,6 @@ import Home from "./pages/home/Home";
 import NotFound from "./components/not found/Notfound";
 import { Footer } from "./components/footer/Footer";
 
-
-
 export default function App() {
   return (
     <>

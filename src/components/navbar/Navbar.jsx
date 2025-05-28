@@ -1,11 +1,28 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { Menu, Close, AccountCircle, Login, Logout, PersonAdd } from '@mui/icons-material';
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, IconButton, Box, CircularProgress } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import {
+  Menu,
+  Close,
+  AccountCircle,
+  Login,
+  Logout,
+  PersonAdd,
+} from "@mui/icons-material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button,
+  IconButton,
+  Box,
+  CircularProgress,
+} from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,40 +31,43 @@ export const Navbar = () => {
   const [openRegister, setOpenRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+   
   });
 
   // API base URL - replace with your actual API endpoint
-  const API_URL = 'https://your-api-url.com/auth';
+  const API_URL = "https://camera-safety-installation.onrender.com";
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await axios.post(`${API_URL}/login`, {
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       });
 
       // Store token in localStorage or context
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem("token", response.data.token);
       setIsLoggedIn(true);
       setOpenLogin(false);
-      toast.success('Login successful!');
+      toast.success("Login successful!");
     } catch (error) {
-      console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Login failed. Please try again.');
+      console.error("Login error:", error);
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -55,43 +75,48 @@ export const Navbar = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error("Passwords do not match");
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const response = await axios.post(`${API_URL}/register`, {
         name: formData.name,
         email: formData.email,
-        password: formData.password
+        phone: formData.phone,
+        password: formData.password,
       });
 
-      toast.success('Registration successful! Please login.');
+      toast.success("Registration successful! Please login.");
       setOpenRegister(false);
       setOpenLogin(true);
       // Clear form
       setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+       
       });
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+      console.error("Registration error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setIsLoggedIn(false);
-    toast.success('Logged out successfully');
+    toast.success("Logged out successfully");
   };
 
   return (
@@ -101,23 +126,35 @@ export const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
             <div className="flex-shrink-0 flex items-center">
-              <Link to={'/'} className="text-xl font-bold text-gray-900">
+              <Link to={"/"} className="text-xl font-bold text-gray-900">
                 LD SHIELD
               </Link>
             </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to={'/'} className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium">
+              <Link
+                to={"/"}
+                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+              >
                 Home
               </Link>
-              <Link to={'/6272/738A'} className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium">
+              <Link
+                to={"/6272/738A"}
+                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+              >
                 About
               </Link>
-              <Link to={'/7812/18u91'} className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium">
+              <Link
+                to={"/7812/18u91"}
+                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+              >
                 Services
               </Link>
-              <Link to={'/782130/93en032'} className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium">
+              <Link
+                to={"/782130/93en032"}
+                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+              >
                 Contact
               </Link>
             </div>
@@ -128,9 +165,11 @@ export const Navbar = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <AccountCircle className="text-gray-600 !text-[28px]" />
-                    <span className="ml-2 text-gray-900 text-sm font-medium">User</span>
+                    <span className="ml-2 text-gray-900 text-sm font-medium">
+                      User
+                    </span>
                   </div>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="flex items-center text-white dark:text-white text-sm font-medium"
                   >
@@ -140,14 +179,14 @@ export const Navbar = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
-                  <button 
+                  <button
                     onClick={() => setOpenLogin(true)}
                     className="flex items-center text-white dark:text-white text-sm font-medium"
                   >
                     <Login className="mr-1 !text-[20px]" />
                     Login
                   </button>
-                  <button 
+                  <button
                     onClick={() => setOpenRegister(true)}
                     className="flex items-center text-white dark:text-white text-sm font-medium"
                   >
@@ -179,26 +218,40 @@ export const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to={'/'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link
+                to={"/"}
+                className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium"
+              >
                 Home
               </Link>
-              <Link to={'/6272/738A'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link
+                to={"/6272/738A"}
+                className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium"
+              >
                 About
               </Link>
-              <Link to={'/7812/18u91'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link
+                to={"/7812/18u91"}
+                className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium"
+              >
                 Services
               </Link>
-              <Link to={'/782130/93en032'} className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium">
+              <Link
+                to={"/782130/93en032"}
+                className="block px-3 py-2 text-gray-900 hover:bg-gray-100 rounded-md text-base font-medium"
+              >
                 Contact
               </Link>
-              
+
               {isLoggedIn ? (
                 <div className="px-3 py-2">
                   <div className="flex items-center">
                     <AccountCircle className="text-gray-600 !text-[28px]" />
-                    <span className="ml-2 text-gray-900 text-base font-medium">User</span>
+                    <span className="ml-2 text-gray-900 text-base font-medium">
+                      User
+                    </span>
                   </div>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="flex items-center mt-2 text-gray-900 dark:text-white text-base font-medium"
                   >
@@ -208,7 +261,7 @@ export const Navbar = () => {
                 </div>
               ) : (
                 <div className="px-3 py-2 space-y-2">
-                  <button 
+                  <button
                     onClick={() => {
                       setOpenLogin(true);
                       setIsMenuOpen(false);
@@ -218,7 +271,7 @@ export const Navbar = () => {
                     <Login className="mr-1 !text-[20px] text-white" />
                     Login
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       setOpenRegister(true);
                       setIsMenuOpen(false);
@@ -236,7 +289,12 @@ export const Navbar = () => {
       </nav>
 
       {/* Login Modal */}
-      <Dialog open={openLogin} onClose={() => setOpenLogin(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={openLogin}
+        onClose={() => setOpenLogin(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle className="flex justify-between items-center">
           <span>Login to Your Account</span>
           <IconButton onClick={() => setOpenLogin(false)}>
@@ -272,14 +330,17 @@ export const Navbar = () => {
               sx={{ mt: 3, mb: 2, py: 1.5 }}
               disabled={loading || !formData.email || !formData.password}
             >
-              {loading ? <CircularProgress size={24} /> : 'Login'}
+              {loading ? <CircularProgress size={24} /> : "Login"}
             </Button>
             <div className="text-center">
-              <Button onClick={() => {
-                setOpenLogin(false);
-                setOpenRegister(true);
-              }}>
-                Don't have an account? Register
+              Don't have an account?{" "}
+              <Button
+                onClick={() => {
+                  setOpenLogin(false);
+                  setOpenRegister(true);
+                }}
+              >
+                Register
               </Button>
             </div>
           </Box>
@@ -287,7 +348,12 @@ export const Navbar = () => {
       </Dialog>
 
       {/* Register Modal */}
-      <Dialog open={openRegister} onClose={() => setOpenRegister(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={openRegister}
+        onClose={() => setOpenRegister(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle className="flex justify-between items-center">
           <span>Create New Account</span>
           <IconButton onClick={() => setOpenRegister(false)}>
@@ -317,6 +383,15 @@ export const Navbar = () => {
             />
             <TextField
               fullWidth
+              name="phone"
+              label="Telephone"
+              margin="normal"
+              required
+              value={formData.phone}
+              onChange={handleInputChange}
+            />
+            <TextField
+              fullWidth
               name="password"
               label="Password"
               type="password"
@@ -340,16 +415,26 @@ export const Navbar = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2, py: 1.5 }}
-              disabled={loading || !formData.name || !formData.email || !formData.password || !formData.confirmPassword}
+              disabled={
+                loading ||
+                !formData.name ||
+                !formData.email ||
+                !formData.phone ||
+                !formData.password ||
+                !formData.confirmPassword
+              }
             >
-              {loading ? <CircularProgress size={24} /> : 'Register'}
+              {loading ? <CircularProgress size={24} /> : "Register"}
             </Button>
             <div className="text-center">
-              <Button onClick={() => {
-                setOpenRegister(false);
-                setOpenLogin(true);
-              }}>
-                Already have an account? Login
+              Already have an account?
+              <Button
+                onClick={() => {
+                  setOpenRegister(false);
+                  setOpenLogin(true);
+                }}
+              >
+                Login
               </Button>
             </div>
           </Box>
@@ -371,4 +456,3 @@ export const Navbar = () => {
     </>
   );
 };
-
