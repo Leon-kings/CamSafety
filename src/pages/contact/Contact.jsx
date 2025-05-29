@@ -125,8 +125,8 @@ export const Contact = () => {
       }
 
       // API call
-      const response = await axios.post(`${API_URL}/auth/login`, loginData);
-      
+      const response = await axios.post(`${API_URL}/users/login`, loginData);
+
       // Handle successful login
       toast.success("Logged in successfully!", {
         position: "top-right",
@@ -144,9 +144,9 @@ export const Contact = () => {
 
       // You might want to store the token or user data here
       // localStorage.setItem('token', response.data.token);
-
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      const errorMessage =
+        error.response?.data?.message || error.message || "Login failed";
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
@@ -167,7 +167,12 @@ export const Contact = () => {
 
     try {
       // Validate form
-      if (!registerData.fullName || !registerData.email || !registerData.telephone || !registerData.password) {
+      if (
+        !registerData.fullName ||
+        !registerData.email ||
+        !registerData.telephone ||
+        !registerData.password
+      ) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -179,8 +184,8 @@ export const Contact = () => {
       const { confirmPassword, ...dataToSend } = registerData;
 
       // API call
-      const response = await axios.post(`${API_URL}/auth/register`, dataToSend);
-      
+      const response = await axios.post(`${API_URL}/users`, dataToSend);
+
       // Handle successful registration
       toast.success("Account created successfully! You can now login.", {
         position: "top-right",
@@ -203,9 +208,9 @@ export const Contact = () => {
 
       // Optionally open login modal
       setOpenLogin(true);
-
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Registration failed";
+      const errorMessage =
+        error.response?.data?.message || error.message || "Registration failed";
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
@@ -406,7 +411,7 @@ export const Contact = () => {
 
               <div className="pt-4">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.215373510518!2d-73.98784492416407!3d40.74844047138969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1689877897795!5m2!1sen!2sus"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3987.47591869302!2d30.05885681475786!3d-1.9635379985698925!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19dca76b8a1e1d2d%3A0x8a1a1a1a1a1a1a1a!2sKG%2042%20Ave%2C%20Kigali!5e0!3m2!1sen!2srw!4v1620000000000!5m2!1sen!2srw"
                   width="100%"
                   height="300"
                   style={{ border: 0, borderRadius: "8px" }}
@@ -505,14 +510,14 @@ export const Contact = () => {
               required
               autoFocus
             />
-            <TextField 
-              fullWidth 
+            <TextField
+              fullWidth
               label="Email"
               name="email"
               value={registerData.email}
               onChange={handleRegisterChange}
-              margin="normal" 
-              required 
+              margin="normal"
+              required
             />
             <TextField
               fullWidth

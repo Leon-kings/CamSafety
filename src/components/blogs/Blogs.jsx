@@ -126,7 +126,8 @@ const serviceData = {
       category: "Specialty",
       readTime: "7 min",
       image: blog1
-    }
+    },
+    
   ]
 };
 
@@ -228,7 +229,7 @@ export const Blogs = () => {
                 <div className="h-48 overflow-hidden">
                   <img
                     src={service.image}
-                    alt={service.title}
+                    alt=''
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     onError={(e) => {
                       e.target.src = "/images/default-service.jpg";
@@ -247,7 +248,7 @@ export const Blogs = () => {
                   <div className="flex gap-3">
                     <button
                       onClick={() => openModal(service)}
-                      className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors font-medium"
+                      className="flex-1 py-2 hover:bg-gray-200 dark:text-white text-gray-800 rounded-lg transition-colors font-medium"
                     >
                       View Details
                     </button>
@@ -296,7 +297,7 @@ export const Blogs = () => {
               transition={{ type: "spring", damping: 25 }}
               className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-auto"
             >
-              <div className="bg-white rounded-xl shadow-xl overflow-hidden m-4">
+              <div className="bg-white text-black rounded-xl shadow-xl overflow-hidden m-4">
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -342,16 +343,7 @@ export const Blogs = () => {
                           closeModal();
                           openContactModal(selectedService.title);
                         }}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-                      >
-                        Request a Quote
-                      </button>
-                      <button 
-                        onClick={() => {
-                          closeModal();
-                          openContactModal(selectedService.title);
-                        }}
-                        className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors font-medium"
+                        className="px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:text-white text-gray-800 rounded-lg transition-colors font-medium"
                       >
                         Contact Our Team
                       </button>
@@ -423,7 +415,7 @@ export const Blogs = () => {
                       </button>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 text-black">
                       <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
                         <div className="relative">
@@ -497,9 +489,7 @@ export const Blogs = () => {
                           readOnly={!!formData.service}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 border bg-gray-50"
                         />
-                        {formData.service && (
-                          <p className="mt-1 text-sm text-gray-500">Pre-selected based on your interest</p>
-                        )}
+                
                       </div>
 
                       <div>
@@ -516,7 +506,7 @@ export const Blogs = () => {
                             value={formData.message}
                             onChange={handleInputChange}
                             required
-                            rows={4}
+                            rows={2}
                             className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 border"
                             placeholder="Tell us about your project..."
                           />

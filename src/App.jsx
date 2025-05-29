@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import "./App.css";
 import { Navbar } from "./components/navbar/Navbar";
@@ -10,10 +11,26 @@ import { Team } from "./pages/team/Team";
 import { Testimonials } from "./pages/testimony/Testimony";
 import { Blogs } from "./components/blogs/Blogs";
 import { Contact } from "./pages/contact/Contact";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/home/Home";
 import NotFound from "./components/not found/Notfound";
 import { Footer } from "./components/footer/Footer";
+import { Dashboard } from "./components/dashboard/Dashboard";
+
+// Add a simple auth check function (you might want to replace this with your actual auth logic)
+const isAuthenticated = () => {
+  // Check if user is logged in (this could check localStorage, cookies, or your auth state)
+  return localStorage.getItem('isLoggedIn') === 'true';
+};
+
+// ProtectedRoute component to check authentication
+const ProtectedRoute = ({ element: Element, ...rest }) => {
+  return isAuthenticated() ? (
+    <Element {...rest} />
+  ) : (
+    <Navigate to="/" replace />
+  );
+};
 
 export default function App() {
   return (
@@ -27,8 +44,13 @@ export default function App() {
         <Route path="/782130/93en032" element={<Contact />} />
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />
+        {/* protected route */}
+        <Route 
+          path="/Dashboard" 
+          element={<ProtectedRoute element={Dashboard} />} 
+        />
       </Routes>
-      <Footer/>
+      <Footer />
     </>
   );
 }

@@ -22,7 +22,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,6 +30,7 @@ export const Navbar = () => {
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -39,7 +40,7 @@ export const Navbar = () => {
   });
 
   // API base URL - replace with your actual API endpoint
-  const API_URL = "https://camera-safety-installation.onrender.com";
+  const API_URL = "https://camera-safety.onrender.com";
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -53,7 +54,7 @@ export const Navbar = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/login`, {
+      const response = await axios.post(`${API_URL}/users/login`, {
         email: formData.email,
         password: formData.password,
       });
@@ -63,6 +64,7 @@ export const Navbar = () => {
       setIsLoggedIn(true);
       setOpenLogin(false);
       toast.success("Login successful!");
+      navigate('/Dashboard');
     } catch (error) {
       console.error("Login error:", error);
       toast.error(
@@ -84,7 +86,7 @@ export const Navbar = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/register`, {
+      const response = await axios.post(`${API_URL}/users`, {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -127,7 +129,7 @@ export const Navbar = () => {
             {/* Logo/Brand */}
             <div className="flex-shrink-0 flex items-center">
               <Link to={"/"} className="text-xl font-bold text-gray-900">
-                LD SHIELD
+                SHIELD
               </Link>
             </div>
 
@@ -135,25 +137,25 @@ export const Navbar = () => {
             <div className="hidden md:flex items-center space-x-8">
               <Link
                 to={"/"}
-                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+                className="text-gray-900 dark:text-black px-3 py-2 text-sm font-medium"
               >
                 Home
               </Link>
               <Link
                 to={"/6272/738A"}
-                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+                className="text-gray-900 dark:text-black px-3 py-2 text-sm font-medium"
               >
                 About
-              </Link>
+              </Link> 
               <Link
                 to={"/7812/18u91"}
-                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+                className="text-gray-900 dark:text-black px-3 py-2 text-sm font-medium"
               >
                 Services
               </Link>
               <Link
                 to={"/782130/93en032"}
-                className="text-gray-900 dark:text-white px-3 py-2 text-sm font-medium"
+                className="text-gray-900 dark:text-black px-3 py-2 text-sm font-medium"
               >
                 Contact
               </Link>
@@ -171,7 +173,7 @@ export const Navbar = () => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center text-white dark:text-white text-sm font-medium"
+                    className="flex items-center text-white dark:text-black text-sm font-medium"
                   >
                     <Logout className="mr-1 !text-[20px]" />
                     Logout
