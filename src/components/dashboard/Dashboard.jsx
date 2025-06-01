@@ -1,273 +1,408 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
+         XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { 
-  FiActivity, 
-  FiUsers, 
-  FiDollarSign, 
-  FiPackage,
-  FiCalendar,
-  FiAlertCircle,
-  FiBarChart2,
-  FiPlus
-} from 'react-icons/fi';
-import { BarChart, PieChart } from '../dash_components/admin/ChartComponents'; // Custom chart components
+  Menu as MenuIcon,
+  ChevronLeft,
+  ChevronRight,
+  Dashboard as DashboardIcon,
+  CameraAlt as CameraIcon,
+  Warning as WarningIcon,
+  Settings as SettingsIcon,
+  People as PeopleIcon,
+  Timeline as TimelineIcon,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  Message as MessageIcon,
+  CheckCircle as CheckCircleIcon
+} from '@mui/icons-material';
+import axios from 'axios';
+
+// Camera safety data
+const inspectionData = [
+  { name: 'Jan', value: 42 },
+  { name: 'Feb', value: 38 },
+  { name: 'Mar', value: 51 },
+  { name: 'Apr', value: 47 },
+  { name: 'May', value: 39 },
+  { name: 'Jun', value: 45 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+
+const navItems = [
+  { name: 'Dashboard', icon: <DashboardIcon /> },
+  { name: 'Cameras', icon: <CameraIcon /> },
+  { name: 'Violations', icon: <WarningIcon /> },
+  { name: 'Reports', icon: <BarChartIcon /> },
+  { name: 'Users', icon: <PeopleIcon /> },
+  { name: 'Settings', icon: <SettingsIcon /> }
+];
 
 export const Dashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('monthly');
+  const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [userStats, setUserStats] = useState();
+  const [messageStats, setMessageStats] = useState();
+  const [complianceStats, setComplianceStats] = useState();
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [messageStatsLoading, setMessageStatsLoading] = useState(true);
+  const [complianceStatsLoading, setComplianceStatsLoading] = useState(true);
+  const [growthData, setGrowthData] = useState([]);
+  const [orderTargetData, setOrderTargetData] = useState([
+    { name: 'Achieved', value: 0 },
+    { name: 'Remaining', value: 100 }
+  ]);
 
-  // Fetch dashboard data
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    // Fetch user statistics from API
+    const fetchUserStats = async () => {
       try {
-        // Simulate API calls
-        const statsResponse = await fetch('/api/dashboard/stats');
-        const activityResponse = await fetch('/api/dashboard/activity');
+        const response = await axios.get('https://camera-safety.onrender.com/users/statistics/system');
+        console.log(response.data.report);
+        setUserStats(response.data.report);
         
-        const statsData = await statsResponse.json();
-        const activityData = await activityResponse.json();
-        
-        setStats(statsData);
-        setRecentActivity(activityData);
-        toast.success('Dashboard data loaded!');
+        // Process growth data for the chart
+        if (response.data.report?.growthData) {
+          const formattedData = response.data.report.growthData.map(item => ({
+            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            count: item.count
+          }));
+          setGrowthData(formattedData);
+        }
       } catch (error) {
-        toast.error('Failed to load dashboard data',error);
+        console.error('Error fetching user statistics:', error);
       } finally {
-        setLoading(false);
+        setStatsLoading(false);
       }
     };
 
-    fetchDashboardData();
+    // Fetch message statistics from API
+    const fetchMessageStats = async () => {
+      try {
+        const response = await axios.get('https://camera-safety.onrender.com/messages/890/stats');
+        console.log(response.data.data);
+        setMessageStats(response.data.data);
+      } catch (error) {
+        console.error('Error fetching message statistics:', error);
+      } finally {
+        setMessageStatsLoading(false);
+      }
+    };
+
+    // Fetch compliance statistics from API
+    const fetchComplianceStats = async () => {
+      try {
+        const response = await axios.get('https://camera-safety.onrender.com/api/orders/stats');
+        console.log('Compliance stats:', response.data.data);
+        setComplianceStats(response.data.data);
+        
+        // Calculate percentage of target (1000) reached
+        if (response.data.data?.totalRevenue) {
+          const target = 1000;
+          const percentage = Math.min(Math.round((response.data.data.totalRevenue / target) * 100, 100));
+          setOrderTargetData([
+            { name: 'Achieved', value: percentage },
+            { name: 'Remaining', value: 100 - percentage }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching compliance statistics:', error);
+      } finally {
+        setComplianceStatsLoading(false);
+      }
+    };
+
+    fetchUserStats();
+    fetchMessageStats();
+    fetchComplianceStats();
+
+    // Simulate other data loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleQuickAction = (action) => {
-    toast.info(`Performing ${action}...`);
-    // Add actual action logic here
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen(!mobileSidebarOpen);
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5 }
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6">
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="space-y-6"
-      >
-        {/* Header */}
-        <motion.div variants={itemVariants}>
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-          <p className="text-gray-600">Welcome back! Here's what's happening today.</p>
-        </motion.div>
-
-        {/* Stats Cards */}
-        <motion.div 
-          variants={containerVariants}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          <StatCard 
-            icon={<FiUsers className="text-blue-500" size={24} />}
-            title="Total Users"
-            value={stats?.users || 0}
-            change="+12%"
-            isPositive={true}
-          />
-          <StatCard 
-            icon={<FiDollarSign className="text-green-500" size={24} />}
-            title="Revenue"
-            value={`$${(stats?.revenue || 0).toLocaleString()}`}
-            change="+8.2%"
-            isPositive={true}
-          />
-          <StatCard 
-            icon={<FiPackage className="text-orange-500" size={24} />}
-            title="Orders"
-            value={stats?.orders || 0}
-            change="-3.1%"
-            isPositive={false}
-          />
-          <StatCard 
-            icon={<FiActivity className="text-purple-500" size={24} />}
-            title="Active Now"
-            value={stats?.activeUsers || 0}
-            change="+4.5%"
-            isPositive={true}
-          />
-        </motion.div>
-
-        {/* Charts Row */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Revenue Overview</h2>
-              <select className="bg-gray-100 rounded px-3 py-1 text-sm">
-                <option>Last 7 Days</option>
-                <option>Last 30 Days</option>
-                <option>This Year</option>
-              </select>
-            </div>
-            <BarChart data={stats?.revenueData} />
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-lg font-semibold mb-4">Traffic Sources</h2>
-            <PieChart data={stats?.trafficData} />
-          </div>
-        </motion.div>
-
-        {/* Quick Actions & Activity Feed */}
-        <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <motion.div 
-            variants={itemVariants}
-            className="bg-white p-6 rounded-xl shadow lg:col-span-1"
-          >
-            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <QuickActionButton 
-                icon={<FiPlus />}
-                text="Add New User"
-                onClick={() => handleQuickAction('add user')}
-                color="bg-blue-100 text-blue-600"
-              />
-              <QuickActionButton 
-                icon={<FiCalendar />}
-                text="Create Event"
-                onClick={() => handleQuickAction('create event')}
-                color="bg-purple-100 text-purple-600"
-              />
-              <QuickActionButton 
-                icon={<FiAlertCircle />}
-                text="Report Issue"
-                onClick={() => handleQuickAction('report issue')}
-                color="bg-red-100 text-red-600"
-              />
-              <QuickActionButton 
-                icon={<FiBarChart2 />}
-                text="Generate Report"
-                onClick={() => handleQuickAction('generate report')}
-                color="bg-green-100 text-green-600"
-              />
-            </div>
-          </motion.div>
-
-          {/* Activity Feed */}
-          <motion.div 
-            variants={itemVariants}
-            className="bg-white p-6 rounded-xl shadow lg:col-span-2"
-          >
-            <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <ActivityItem 
-                  key={index}
-                  type={activity.type}
-                  user={activity.user}
-                  action={activity.action}
-                  time={activity.time}
-                />
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-      </motion.div>
-
-      <ToastContainer position="bottom-right" autoClose={3000} />
+  const StatsCard = ({ title, value, change, icon }) => (
+    <div className="bg-white rounded-lg shadow p-6 h-full">
+      <div className="text-gray-700 text-sm mb-2">{title}</div>
+      <div className="text-2xl text-blue-400 font-bold mb-1">{value}</div>
+      {change !== undefined && (
+        <div className={`text-sm ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+          {change >= 0 ? `+${change}%` : `${change}%`} from last period
+        </div>
+      )}
+      <div className="mt-3 text-2xl">{icon}</div>
     </div>
   );
-};
-
-// Reusable Components
-const StatCard = ({ icon, title, value, change, isPositive }) => (
-  <motion.div 
-   
-    whileHover={{ y: -5 }}
-    className="bg-white p-6 rounded-xl shadow"
-  >
-    <div className="flex justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">{title}</p>
-        <p className="text-2xl font-bold mt-1">{value}</p>
-      </div>
-      <div className="bg-gray-100 p-3 rounded-lg">
-        {icon}
-      </div>
-    </div>
-    <p className={`mt-3 text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-      {change} from last week
-    </p>
-  </motion.div>
-);
-
-const QuickActionButton = ({ icon, text, onClick, color }) => (
-  <motion.button
-    whileTap={{ scale: 0.95 }}
-    onClick={onClick}
-    className={`flex items-center space-x-2 w-full p-3 rounded-lg ${color} transition-colors`}
-  >
-    {icon}
-    <span>{text}</span>
-  </motion.button>
-);
-
-const ActivityItem = ({ type, user, action, time }) => {
-  const getIcon = () => {
-    switch (type) {
-      case 'user': return <FiUsers className="text-blue-500" />;
-      case 'order': return <FiPackage className="text-orange-500" />;
-      case 'payment': return <FiDollarSign className="text-green-500" />;
-      default: return <FiActivity className="text-purple-500" />;
-    }
-  };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex items-start space-x-3"
-    >
-      <div className={`p-2 rounded-lg bg-opacity-20 ${type === 'user' ? 'bg-blue-100' : type === 'order' ? 'bg-orange-100' : 'bg-purple-100'}`}>
-        {getIcon()}
+    <div className="flex h-screen bg-gray-100">
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={toggleMobileSidebar}
+        ></div>
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed lg:static z-30 ${sidebarOpen ? 'w-64' : 'w-20'} h-full bg-blue-800 text-white transition-all duration-300 ease-in-out
+        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-64'} lg:translate-x-0`}>
+        
+        <div className="flex items-center justify-between p-4 border-b border-blue-700">
+          {sidebarOpen && <h3 className="text-xl font-semibold">SafetyVision</h3>}
+          <button 
+            onClick={toggleSidebar} 
+            className="text-white hover:text-blue-200 hidden lg:block"
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+          </button>
+        </div>
+        
+        <nav className="p-4">
+          <ul className="space-y-2">
+            {navItems.map((item, index) => (
+              <li key={index}>
+                <a 
+                  href="#" 
+                  className={`flex items-center p-3 rounded-lg hover:bg-blue-700 transition-colors ${!sidebarOpen ? 'justify-center' : ''}`}
+                  title={!sidebarOpen ? item.name : ''}
+                >
+                  <span className={sidebarOpen ? 'mr-3' : ''}>{item.icon}</span>
+                  {sidebarOpen && <span>{item.name}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <div className="flex-1">
-        <p className="text-sm">
-          <span className="font-medium">{user}</span> {action}
-        </p>
-        <p className="text-xs text-gray-500 mt-1">{time}</p>
+
+      {/* Main content */}
+      <div className={`flex-1 overflow-auto transition-all duration-300 ${sidebarOpen ? 'lg:ml-6' : 'lg:ml-4'}`}>
+        {/* Top bar */}
+        <header className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+          <button 
+            onClick={toggleMobileSidebar}
+            className="lg:hidden text-gray-500 hover:text-gray-700"
+            aria-label="Open menu"
+          >
+            <MenuIcon />
+          </button>
+          <div className="flex items-center space-x-4">
+            <select
+              className="p-2 rounded border border-gray-300 text-sm"
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            {/* Hidden toggle button for larger screens - only visible when sidebar is collapsed */}
+            <button 
+              onClick={toggleSidebar} 
+              className="hidden lg:block text-gray-500 hover:text-gray-700 ml-2"
+              aria-label="Toggle sidebar"
+            >
+              <MenuIcon />
+            </button>
+          </div>
+        </header>
+
+        {/* Dashboard content */}
+        <main className="p-5 max-w-7xl mx-auto">
+          <h1 className="text-2xl font-bold text-gray-800 mb-5">Camera Safety Compliance Dashboard</h1>
+
+          {isLoading ? (
+            <div className="text-center p-5">Loading safety data...</div>
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+                <StatsCard 
+                  title="Cameras Inspected" 
+                  value="142" 
+                  change={8.5} 
+                  icon={<CameraIcon className="text-blue-500" />} 
+                />
+                {complianceStatsLoading ? (
+                  <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center">
+                    <div className="animate-pulse">Loading Orders data...</div>
+                  </div>
+                ) : (
+                  <StatsCard 
+                    title="Orders" 
+                    value={complianceStats?.totalRevenue} 
+                    change={complianceStats?.totalOrders || 0} 
+                    icon={<CheckCircleIcon className="text-green-500" />} 
+                  />
+                )}
+                {messageStatsLoading ? (
+                  <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center">
+                    <div className="animate-pulse">Loading message data...</div>
+                  </div>
+                ) : (
+                  <StatsCard 
+                    title="Total Messages" 
+                    value={messageStats?.totalContacts || '0'} 
+                    icon={<MessageIcon className="text-purple-500" />} 
+                    change={messageStats?.newThisMonth}
+                  />
+                )}
+                {statsLoading ? (
+                  <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center">
+                    <div className="animate-pulse">Loading user data...</div>
+                  </div>
+                ) : (
+                  <StatsCard 
+                    title="Total Users" 
+                    value={userStats?.totalUsers || '0'} 
+                    icon={<PeopleIcon className="text-green-500" />} 
+                    change={userStats?.newUsers?.last7d}
+                  />
+                )}
+              </div>
+
+              {/* Monthly Inspections and Target Progress */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+                {/* User Growth Chart */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <TimelineIcon className="text-blue-500 mr-2" /> User Growth
+                  </h3>
+                  {growthData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={growthData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fontSize: 12 }}
+                          interval={Math.floor(growthData.length / 5)}
+                        />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value) => [value, 'User Count']}
+                          labelFormatter={(label) => `Date: ${label}`}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="count" 
+                          stroke="#8884d8" 
+                          strokeWidth={2}
+                          dot={{ r: (data) => data.count > 0 ? 4 : 0 }}
+                          activeDot={{ r: 6 }} 
+                          name="User Count"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-64 text-gray-500">
+                      {statsLoading ? 'Loading growth data...' : 'No growth data available'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Monthly Revenue Target Progress */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <PieChartIcon className="text-green-500 mr-2" /> Monthly Revenue Target
+                  </h3>
+                  {complianceStatsLoading ? (
+                    <div className="flex items-center justify-center h-64 text-gray-500">
+                      Loading order data...
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-center mb-4">
+                        <div className="text-2xl font-bold text-blue-600">
+                          ${complianceStats?.totalRevenue || 0} / $1000
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {Math.min(Math.round(((complianceStats?.totalRevenue || 0) / 10), 100))}% of target
+                        </div>
+                      </div>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={orderTargetData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          >
+                            <Cell fill="#00C49F" />
+                            <Cell fill="#FF8042" />
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value, name) => [`${value}%`, name]}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Violations */}
+              <div className="grid grid-cols-1 gap-5 mb-8">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <WarningIcon className="text-red-500 mr-2" /> Recent Violations
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={inspectionData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="value" fill="#82ca9d" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Safety Analysis Models */}
+              <h2 className="text-xl font-bold text-gray-800 my-5 flex items-center">
+                <BarChartIcon className="text-purple-500 mr-2" /> Safety Analysis Models
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4">Risk Prediction</h3>
+                  <div className="flex items-center justify-center h-64 bg-gray-50 rounded text-gray-500">
+                    Camera failure risk prediction model
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4">Maintenance Optimization</h3>
+                  <div className="flex items-center justify-center h-64 bg-gray-50 rounded text-gray-500">
+                    Maintenance schedule optimization model
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </main>
       </div>
-    </motion.div>
+    </div>
   );
 };

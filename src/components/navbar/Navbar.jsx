@@ -49,31 +49,43 @@ export const Navbar = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await axios.post(`${API_URL}/users/login`, {
-        email: formData.email,
-        password: formData.password,
-      });
+  try {
+    const response = await axios.post(`${API_URL}/users/login`, {
+      email: formData.email,
+      password: formData.password,
+    });
 
-      // Store token in localStorage or context
-      localStorage.setItem("token", response.data.token);
-      setIsLoggedIn(true);
-      setOpenLogin(false);
-      toast.success("Login successful!");
+    // Store token and user data in localStorage
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+    
+    setIsLoggedIn(true);
+    setOpenLogin(false);
+    toast.success("Login successful!");
+
+    // Navigate based on user status
+    const userStatus = response.data.user?.status?.toLowerCase();
+    if (userStatus === 'admin') {
       navigate('/Dashboard');
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
+    } else if (userStatus === 'user') {
+      navigate('/Udashboard');
+    } else {
+      navigate('/');
     }
-  };
+
+  } catch (error) {
+    console.error("Login error:", error);
+    toast.error(
+      error.response?.data?.message || "Login failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleRegister = async (e) => {
     e.preventDefault();

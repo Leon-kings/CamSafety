@@ -1,26 +1,21 @@
 /* eslint-disable no-unused-vars */
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { Navbar } from "./components/navbar/Navbar";
-import { Hero } from "./components/hero/Hero";
 import { About } from "./pages/about/About";
 import { Services } from "./pages/services/Services";
-import { PricingPlan } from "./pages/pricing/PricePlan";
-import { Offer } from "./pages/offer/Offers";
-import { Team } from "./pages/team/Team";
-import { Testimonials } from "./pages/testimony/Testimony";
 import { Blogs } from "./components/blogs/Blogs";
 import { Contact } from "./pages/contact/Contact";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./pages/home/Home";
 import NotFound from "./components/not found/Notfound";
 import { Footer } from "./components/footer/Footer";
 import { Dashboard } from "./components/dashboard/Dashboard";
+import { ViewTracker } from "./components/views/ViewTracker";
 
-// Add a simple auth check function (you might want to replace this with your actual auth logic)
+// Add a simple auth check function
 const isAuthenticated = () => {
-  // Check if user is logged in (this could check localStorage, cookies, or your auth state)
-  return localStorage.getItem('isLoggedIn') === 'true';
+  return localStorage.getItem("isLoggedIn") === "true";
 };
 
 // ProtectedRoute component to check authentication
@@ -33,10 +28,30 @@ const ProtectedRoute = ({ element: Element, ...rest }) => {
 };
 
 export default function App() {
+  const location = useLocation();
+
+  // Save current route to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("lastRoute", location.pathname);
+  }, [location]);
+
+  // Check for saved route on initial load
+  useEffect(() => {
+    const lastRoute = localStorage.getItem("lastRoute");
+    if (
+      lastRoute &&
+      lastRoute !== "/" &&
+      lastRoute !== window.location.pathname
+    ) {
+      window.location.href = lastRoute;
+    }
+  }, []);
+
   return (
     <>
       <Navbar />
-      <Routes>
+      <ViewTracker/>
+      <Routes location={location} key={location.key}>
         <Route path="/" element={<Home />} />
         <Route path="/6272/738A" element={<About />} />
         <Route path="/7812/18u91" element={<Services />} />
@@ -45,10 +60,11 @@ export default function App() {
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />
         {/* protected route */}
-        <Route 
-          path="/Dashboard" 
-          element={<ProtectedRoute element={Dashboard} />} 
-        />
+        {/* <Route
+          path="/Dashboard"
+          element={<ProtectedRoute element={Dashboard} />}
+        /> */}
+        <Route path="/Dashboard" element={<Dashboard />} />
       </Routes>
       <Footer />
     </>

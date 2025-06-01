@@ -25,9 +25,10 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 // Base API URL (replace with your actual API endpoint)
-const API_URL = "https://your-api-endpoint.com/api";
+const API_URL = "https://camera-safety.onrender.com";
 
 export const Contact = () => {
   // Form state
@@ -48,7 +49,7 @@ export const Contact = () => {
   const [registerData, setRegisterData] = useState({
     name: "",
     email: "",
-    telephone: "",
+    phone: "",
     password: "",
   });
 
@@ -58,6 +59,7 @@ export const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -74,92 +76,108 @@ export const Contact = () => {
     setRegisterData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+  try {
+    // Send data to API
+    const response = await axios.post(`${API_URL}/messages/890`, formData);
 
-      toast.success("Message sent successfully!", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+    toast.success("Message sent successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
 
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
-    } catch (error) {
-      toast.error("Failed to send message. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    } finally {
-      setIsSubmitting(false);
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    });
+  } catch (error) {
+    const errorMessage = 
+      error.response?.data?.message || 
+      "Failed to send message. Please try again.";
+    
+    toast.error(errorMessage, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoggingIn(true);
+
+  try {
+    // Validate form
+    if (!loginData.email || !loginData.password) {
+      throw new Error("Please fill in all fields");
     }
-  };
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
+    // API call
+    const response = await axios.post(`${API_URL}/users/login`, loginData);
 
-    try {
-      // Validate form
-      if (!loginData.email || !loginData.password) {
-        throw new Error("Please fill in all fields");
-      }
+    // Handle successful login
+    toast.success("Logged in successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
 
-      // API call
-      const response = await axios.post(`${API_URL}/users/login`, loginData);
+    // Store token and user data
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    // Close modal and reset form
+    setOpenLogin(false);
+    setLoginData({ email: "", password: "" });
 
-      // Handle successful login
-      toast.success("Logged in successfully!", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-
-      // Close modal and reset form
-      setOpenLogin(false);
-      setLoginData({ email: "", password: "" });
-
-      // You might want to store the token or user data here
-      // localStorage.setItem('token', response.data.token);
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "Login failed";
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    } finally {
-      setIsLoggingIn(false);
+    // Navigate based on user status
+    const userStatus = response.data.user?.status?.toLowerCase();
+    if (userStatus === 'admin') {
+      navigate('/Dashboard');
+    } else if (userStatus === 'user') {
+      navigate('/Udashboard');
+    } else {
+      navigate('/');
     }
-  };
+
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Login failed";
+    toast.error(errorMessage, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  } finally {
+    setIsLoggingIn(false);
+  }
+};
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
@@ -170,7 +188,7 @@ export const Contact = () => {
       if (
         !registerData.fullName ||
         !registerData.email ||
-        !registerData.telephone ||
+        !registerData.phone ||
         !registerData.password
       ) {
         throw new Error("Please fill in all required fields");
@@ -202,7 +220,7 @@ export const Contact = () => {
       setRegisterData({
         name: "",
         email: "",
-        telephone: "",
+        phone: "",
         password: "",
       });
 

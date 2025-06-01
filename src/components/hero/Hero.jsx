@@ -1,20 +1,22 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import { 
-  Security, 
-  Home, 
-  Phone, 
-  ArrowBackIos, 
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
+import MenuItem from "@mui/material/MenuItem";
+import {
+  Security,
+  Home,
+  Phone,
+  ArrowBackIos,
   ArrowForwardIos,
   Close,
   Person,
   Email,
   Business,
-  Message
-} from '@mui/icons-material';
-import { 
+  Message,
+  Settings,
+} from "@mui/icons-material";
+import {
   Dialog,
   DialogTitle,
   DialogContent,
@@ -22,9 +24,10 @@ import {
   Button,
   Box,
   CircularProgress,
-  IconButton
-} from '@mui/material';
-import { slides } from '../../assets/data/data';
+  IconButton,
+} from "@mui/material";
+import { slides } from "../../assets/data/data";
+import axios from "axios";
 
 export const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -32,14 +35,14 @@ export const Hero = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    service: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    service: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const API_URL = "https://camera-safety.onrender.com";
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isHovered) {
@@ -66,27 +69,62 @@ export const Hero = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      // Replace with your actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Your message has been sent successfully!');
+      // API call to submit contact form data
+      const response = await axios.post(`${API_URL}/messages/890`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Show success message
+      toast.success("Your message has been sent successfully!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+
+      // Close modal and reset form
       setContactModalOpen(false);
       setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        message: ''
+        name: "",
+        email: "",
+        phone: "",
+        service: "",
+        message: "",
       });
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
+      // Handle different types of errors
+      let errorMessage = "Failed to send message. Please try again.";
+
+      if (error.response) {
+        // Server responded with an error status (4xx, 5xx)
+        errorMessage = error.response.data.message || error.response.statusText;
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = "Network error. Please check your connection.";
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -94,14 +132,14 @@ export const Hero = () => {
 
   const openContactModal = () => {
     // Pre-fill service if available from slide
-    const service = slides[currentSlide]?.service || '';
-    setFormData(prev => ({ ...prev, service }));
+    const service = slides[currentSlide]?.service || "";
+    setFormData((prev) => ({ ...prev, service }));
     setContactModalOpen(true);
   };
 
   const variants = {
     enter: (direction) => ({
-      x: direction > 0 ? '100%' : '-100%',
+      x: direction > 0 ? "100%" : "-100%",
       opacity: 0,
     }),
     center: {
@@ -109,7 +147,7 @@ export const Hero = () => {
       opacity: 1,
     },
     exit: (direction) => ({
-      x: direction > 0 ? '-100%' : '100%',
+      x: direction > 0 ? "-100%" : "100%",
       opacity: 0,
     }),
   };
@@ -120,7 +158,7 @@ export const Hero = () => {
   };
 
   return (
-    <div 
+    <div
       className="relative mt-4 rounded-2xl min-h-screen w-full overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -134,7 +172,7 @@ export const Hero = () => {
           animate="center"
           exit="exit"
           transition={{
-            x: { type: 'spring', stiffness: 300, damping: 30 },
+            x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.3 },
           }}
           className="absolute w-full h-full"
@@ -144,14 +182,14 @@ export const Hero = () => {
             alt={`Slide ${currentSlide + 1}`}
             className="w-full h-full object-cover"
           />
-          
+
           {/* Hover-based content overlay */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
             initial={false}
             variants={{
-              visible: { backgroundColor: 'rgba(0,0,0,0.7)' },
-              hidden: { backgroundColor: 'rgba(0,0,0,0.5)' }
+              visible: { backgroundColor: "rgba(0,0,0,0.7)" },
+              hidden: { backgroundColor: "rgba(0,0,0,0.5)" },
             }}
             transition={{ duration: 0.3 }}
           >
@@ -160,7 +198,7 @@ export const Hero = () => {
               variants={contentVariants}
               transition={{ delay: 0.2 }}
             >
-              <motion.h5 
+              <motion.h5
                 className="text-white text-xl md:text-2xl uppercase mb-4 flex items-center justify-center"
                 whileHover={{ scale: 1.05 }}
               >
@@ -172,7 +210,7 @@ export const Hero = () => {
               >
                 {slides[currentSlide].title}
               </motion.h1>
-              <motion.div 
+              <motion.div
                 className="flex flex-col sm:flex-row justify-center gap-4"
                 variants={contentVariants}
                 transition={{ delay: 0.4 }}
@@ -180,7 +218,11 @@ export const Hero = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => toast.info('Our expert technicians provide comprehensive CCTV installation services tailored to your specific requirements. We handle everything from site survey and camera placement to wiring and system configuration. Our installations include high-quality cameras with night vision, motion detection, and weatherproof housing for outdoor use.')}
+                  onClick={() =>
+                    toast.info(
+                      "Our expert technicians provide comprehensive CCTV installation services tailored to your specific requirements. We handle everything from site survey and camera placement to wiring and system configuration. Our installations include high-quality cameras with night vision, motion detection, and weatherproof housing for outdoor use."
+                    )
+                  }
                   className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg flex items-center justify-center"
                 >
                   <Home className="mr-2" /> Quote
@@ -199,19 +241,15 @@ export const Hero = () => {
         </motion.div>
       </AnimatePresence>
 
-    
-
       {/* Indicators */}
-      <motion.div 
+      <motion.div
         className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-10"
         animate={isHovered ? "visible" : "hidden"}
         variants={{
           visible: { opacity: 1 },
-          hidden: { opacity: 0.7 }
+          hidden: { opacity: 0.7 },
         }}
-      >
-
-      </motion.div>
+      ></motion.div>
 
       {/* Contact Modal */}
       <Dialog
@@ -221,8 +259,8 @@ export const Hero = () => {
         fullWidth
         PaperProps={{
           style: {
-            borderRadius: '16px',
-          }
+            borderRadius: "16px",
+          },
         }}
       >
         <DialogTitle className="flex justify-between items-center border-b p-6">
@@ -283,6 +321,7 @@ export const Hero = () => {
 
             <Box mb={3}>
               <TextField
+                select
                 fullWidth
                 label="Service Interested In"
                 variant="outlined"
@@ -290,10 +329,13 @@ export const Hero = () => {
                 value={formData.service}
                 onChange={handleInputChange}
                 InputProps={{
-                  readOnly: !!formData.service,
+                  startAdornment: <Settings className="mr-2 text-gray-500" />,
                 }}
-                helperText={formData.service ? "Pre-selected based on your interest" : ""}
-              />
+              >
+                <MenuItem value="Installation">Installation</MenuItem>
+                <MenuItem value="Configuration">Configuration</MenuItem>
+                <MenuItem value="Maintenance">Maintenance</MenuItem>
+              </TextField>
             </Box>
 
             <Box mb={4}>
@@ -322,11 +364,11 @@ export const Hero = () => {
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               sx={{
-                backgroundColor: '#2563eb',
-                '&:hover': {
-                  backgroundColor: '#1d4ed8',
+                backgroundColor: "#2563eb",
+                "&:hover": {
+                  backgroundColor: "#1d4ed8",
                 },
-                py: 1.5
+                py: 1.5,
               }}
             >
               {isSubmitting ? "Sending..." : "Send Message"}
