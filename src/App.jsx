@@ -12,6 +12,12 @@ import NotFound from "./components/not found/Notfound";
 import { Footer } from "./components/footer/Footer";
 import { Dashboard } from "./components/dashboard/Dashboard";
 import { ViewTracker } from "./components/views/ViewTracker";
+import { UserManagement } from "./components/dash_components/admin/user/management/UserManagement";
+import { MessageManagement } from "./components/dash_components/admin/messages/management/MessageManagement";
+import { ContactManagement } from "./components/dash_components/admin/contacts/management/ContactManagement";
+import { NewsLetterManagement } from "./components/dash_components/admin/newsletter/NewsLetterManagement";
+import { TestimonyManagement } from "./components/dash_components/admin/testimony/management/TestimonyManagement";
+import { OrderManagement } from "./components/dash_components/admin/orders/management/OrderManagement";
 
 // Add a simple auth check function
 const isAuthenticated = () => {
@@ -50,7 +56,7 @@ export default function App() {
   return (
     <>
       <Navbar />
-      <ViewTracker/>
+      <ViewTracker />
       <Routes location={location} key={location.key}>
         <Route path="/" element={<Home />} />
         <Route path="/6272/738A" element={<About />} />
@@ -60,11 +66,18 @@ export default function App() {
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />
         {/* protected route */}
-        {/* <Route
+        <Route
           path="/Dashboard"
           element={<ProtectedRoute element={Dashboard} />}
-        /> */}
-        <Route path="/Dashboard" element={<Dashboard />} />
+        />
+        {/* <Route path="/Dashboard" element={<Dashboard />} /> */}
+        <Route path="/8032" element={<UserManagement />} />
+        <Route path="/97230" element={<MessageManagement />} />
+        <Route path="/1283" element={<ContactManagement />} />
+        <Route path="/97839" element={<NewsLetterManagement />} />
+        <Route path="/7822982" element={<TestimonyManagement />} />
+        <Route path="/7822" element={<OrderManagement />} />
+        {/*  */}
       </Routes>
       <Footer />
     </>

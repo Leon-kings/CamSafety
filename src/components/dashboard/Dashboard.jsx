@@ -14,9 +14,12 @@ import {
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
   Message as MessageIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Message,
+  ShoppingCart
 } from '@mui/icons-material';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 // Camera safety data
 const inspectionData = [
@@ -31,16 +34,16 @@ const inspectionData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 const navItems = [
-  { name: 'Dashboard', icon: <DashboardIcon /> },
-  { name: 'Cameras', icon: <CameraIcon /> },
-  { name: 'Violations', icon: <WarningIcon /> },
-  { name: 'Reports', icon: <BarChartIcon /> },
-  { name: 'Users', icon: <PeopleIcon /> },
-  { name: 'Settings', icon: <SettingsIcon /> }
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
+  { name: 'Orders', icon: <ShoppingCart />, href: '/orders' },
+  { name: 'Messages', icon: <Message />, href: '/messages' },
+  { name: 'Reports', icon: <BarChartIcon />, href: '/reports' },
+  { name: 'Users', icon: <PeopleIcon />, href: '/users' },
+  { name: 'Settings', icon: <SettingsIcon />, href: '/settings' }
 ];
 
 export const Dashboard = () => {
-  const [timeRange, setTimeRange] = useState('monthly');
+ 
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -176,14 +179,14 @@ export const Dashboard = () => {
           <ul className="space-y-2">
             {navItems.map((item, index) => (
               <li key={index}>
-                <a 
-                  href="#" 
+                <Link 
+                  to={item.href} 
                   className={`flex items-center p-3 rounded-lg hover:bg-blue-700 transition-colors ${!sidebarOpen ? 'justify-center' : ''}`}
                   title={!sidebarOpen ? item.name : ''}
                 >
                   <span className={sidebarOpen ? 'mr-3' : ''}>{item.icon}</span>
                   {sidebarOpen && <span>{item.name}</span>}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -201,26 +204,7 @@ export const Dashboard = () => {
           >
             <MenuIcon />
           </button>
-          <div className="flex items-center space-x-4">
-            <select
-              className="p-2 rounded border border-gray-300 text-sm"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            {/* Hidden toggle button for larger screens - only visible when sidebar is collapsed */}
-            <button 
-              onClick={toggleSidebar} 
-              className="hidden lg:block text-gray-500 hover:text-gray-700 ml-2"
-              aria-label="Toggle sidebar"
-            >
-              <MenuIcon />
-            </button>
-          </div>
+  
         </header>
 
         {/* Dashboard content */}

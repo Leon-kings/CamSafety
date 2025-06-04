@@ -1,0 +1,466 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import {
+  Email,
+  CheckCircle,
+  ErrorOutline,
+  Delete,
+  Search,
+  ArrowBack,
+  ArrowForward,
+} from "@mui/icons-material";
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://camera-safety.onrender.com";
+
+const newsletterService = {
+  getSubscribers: async (page = 1, limit = 10) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/newsletter`, {
+        params: { page, limit },
+        timeout: 10000,
+      });
+
+      // Validate and normalize response structure
+      const data = response.data || {};
+      const subscribers = Array.isArray(data)
+        ? data // If response is directly an array
+        : Array.isArray(data.subscribers)
+        ? data.subscribers // If response has subscribers array
+        : Array.isArray(data.data)
+        ? data.data // If response has data array
+        : []; // Fallback to empty array
+
+      return {
+        subscribers,
+        totalPages: data.totalPages || Math.ceil(data.total / limit) || 1,
+      };
+    } catch (error) {
+      console.error("Fetch error:", {
+        config: error.config,
+        response: error.response,
+        message: error.message,
+      });
+      toast.error(error.response?.data?.message || "Failed to fetch subscribers");
+      throw error;
+    }
+  },
+
+  deleteSubscriber: async (id) => {
+    try {
+      await axios.delete(`${API_URL}/api/newsletter/${id}`, { timeout: 5000 });
+      toast.success("Subscriber deleted successfully!");
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete subscriber");
+      throw error;
+    }
+  },
+
+  subscribe: async (email) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/newsletter`,
+        { email: email.toLowerCase().trim(), source: "website" },
+        { timeout: 5000 }
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 409) {
+        throw new Error("This email is already subscribed");
+      }
+      throw new Error(error.response?.data?.message || "Failed to subscribe");
+    }
+  },
+};
+
+export const NewsLetterManagement = () => {
+  const [subscribers, setSubscribers] = useState([]); // Always initialized as array
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchSubscribers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await newsletterService.getSubscribers(page, 10);
+      setSubscribers(data.subscribers);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      setError(err.message);
+      setSubscribers([]); // Ensure we always have an array
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscribers();
+  }, [page]);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!email) {
+      setError("Email is required");
+      return;
+    }
+
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      await newsletterService.subscribe(email);
+      setIsSubscribed(true);
+      toast.success("Thank you for subscribing to our newsletter!");
+      setEmail("");
+      fetchSubscribers(); // Refresh the list
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this subscriber?")) {
+      setIsProcessing(true);
+      try {
+        await newsletterService.deleteSubscriber(id);
+        fetchSubscribers();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  // Completely safe filtering with multiple fallbacks
+  const filteredSubscribers = (Array.isArray(subscribers) ? subscribers : [])
+    .filter((subscriber) => {
+      try {
+        return subscriber?.email
+          ?.toLowerCase()
+          .includes((searchQuery || "").toLowerCase());
+      } catch {
+        return false;
+      }
+    });
+
+  const renderTableCell = (label, value, isHeader = false) => {
+    if (isHeader) {
+      return (
+        <th className="px-2 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+          <span className="hidden sm:inline">{label}</span>
+          <span className="sm:hidden">{label.substring(0, 1)}</span>
+        </th>
+      );
+    }
+    return (
+      <td className="px-2 py-4 whitespace-nowrap">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-500 sm:hidden">{label}</span>
+          <span className="text-sm text-black">{value || "-"}</span>
+        </div>
+      </td>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="h-12 w-12 border-t-2 border-b-2 border-blue-500 rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+          <ErrorOutline />
+          <span>{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen mt-4 rounded-2xl bg-gray-50 p-2 sm:p-4 md:p-6">
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Subscription Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 p-6 bg-white rounded-xl shadow-sm border border-gray-200"
+      >
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-100 rounded-full">
+              <Email className="text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-black">
+                Newsletter Subscription
+              </h3>
+              <p className="text-sm text-gray-600">
+                Manage newsletter subscriptions and add new subscribers.
+              </p>
+              {error && (
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-xs">
+                  <ErrorOutline fontSize="small" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {isSubscribed ? (
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm">
+              <CheckCircle fontSize="small" />
+              <span>Subscribed!</span>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleSubscribe}
+              className="flex flex-col sm:flex-row gap-2 w-full md:w-auto"
+            >
+              <div className="flex-grow">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Add new subscriber email"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  required
+                  pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+                  title="Please enter a valid email address"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  isProcessing ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isProcessing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                    />
+                    Subscribing...
+                  </span>
+                ) : (
+                  "Add Subscriber"
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Header and Search */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h3 className="text-2xl font-bold text-black">Subscriber Management</h3>
+        <div className="relative w-full sm:w-auto">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search subscribers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black w-full"
+          />
+        </div>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="sm:hidden space-y-4">
+        {filteredSubscribers.length > 0 ? (
+          filteredSubscribers.map((subscriber) => (
+            <motion.div
+              key={subscriber._id || subscriber.email} // Fallback to email if no _id
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-4 rounded-lg shadow"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium text-black">{subscriber.email}</h3>
+                  <p className="text-sm text-gray-600">
+                    Joined:{" "}
+                    {subscriber.subscribedAt
+                      ? new Date(subscriber.subscribedAt).toLocaleDateString()
+                      : "Unknown date"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      subscriber.isActive
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {subscriber.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 flex justify-between items-center">
+                <span className="text-xs text-black font-mono">
+                  Source: {subscriber.source || "website"}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => subscriber._id && handleDelete(subscriber._id)}
+                    className="text-red-600 p-1"
+                    disabled={isProcessing || !subscriber._id}
+                  >
+                    <Delete fontSize="small" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-black">
+            {searchQuery ? "No matching subscribers found" : "No subscribers found"}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {renderTableCell("Email", "Email", true)}
+              {renderTableCell("Subscription Date", "Date", true)}
+              {renderTableCell("Status", "Status", true)}
+              {renderTableCell("Source", "Source", true)}
+              {renderTableCell("Actions", "Actions", true)}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredSubscribers.length > 0 ? (
+              filteredSubscribers.map((subscriber) => (
+                <motion.tr
+                  key={subscriber._id || subscriber.email}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {renderTableCell("Email", subscriber.email)}
+                  {renderTableCell(
+                    "Subscription Date",
+                    subscriber.subscribedAt
+                      ? new Date(subscriber.subscribedAt).toLocaleDateString()
+                      : "-"
+                  )}
+                  <td className="px-2 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        subscriber.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {subscriber.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  {renderTableCell("Source", subscriber.source || "website")}
+                  <td className="px-2 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => subscriber._id && handleDelete(subscriber._id)}
+                      className="text-red-600 hover:text-red-900 p-1"
+                      disabled={isProcessing || !subscriber._id}
+                    >
+                      <Delete fontSize="small" />
+                    </button>
+                  </td>
+                </motion.tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="px-4 py-6 text-center text-black">
+                  {searchQuery
+                    ? "No matching subscribers found"
+                    : "No subscribers found"}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-black">
+            Showing {(page - 1) * 10 + 1}-
+            {Math.min(page * 10, subscribers.length)} of {subscribers.length}{" "}
+            subscribers
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || isProcessing}
+              className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center ${
+                page === 1
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-gray-200 hover:bg-gray-300 text-black"
+              }`}
+            >
+              <ArrowBack fontSize="small" />
+              <span className="ml-1">Previous</span>
+            </button>
+            <span className="px-3 py-1 sm:px-4 sm:py-2 text-black">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || isProcessing}
+              className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center ${
+                page === totalPages
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-gray-200 hover:bg-gray-300 text-black"
+              }`}
+            >
+              <span className="mr-1">Next</span>
+              <ArrowForward fontSize="small" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
