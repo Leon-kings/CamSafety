@@ -107,7 +107,7 @@ const newsletterService = {
   },
 };
 
-export const NewsLetterManagement = () => {
+export const UserNewsLetterManagement = () => {
   const [subscribers, setSubscribers] = useState([]); // Always initialized as array
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

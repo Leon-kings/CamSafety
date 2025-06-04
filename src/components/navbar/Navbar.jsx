@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Menu,
   Close,
@@ -7,6 +7,7 @@ import {
   Login,
   Logout,
   PersonAdd,
+  AdminPanelSettings
 } from "@mui/icons-material";
 import {
   Dialog,
@@ -27,20 +28,32 @@ import { Link, useNavigate } from "react-router-dom";
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     phone: "",
-   
+  
   });
 
   // API base URL - replace with your actual API endpoint
   const API_URL = "https://camera-safety.onrender.com";
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    
+    if (token && user) {
+      setIsLoggedIn(true);
+      setIsAdmin(user.status?.toLowerCase() === 'admin');
+    }
+  }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -49,43 +62,44 @@ export const Navbar = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const response = await axios.post(`${API_URL}/users/login`, {
-      email: formData.email,
-      password: formData.password,
-    });
+    try {
+      const response = await axios.post(`${API_URL}/users/login`, {
+        email: formData.email,
+        password: formData.password,
+      });
 
-    // Store token and user data in localStorage
-    localStorage.setItem("token", response.data.token);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
-    
-    setIsLoggedIn(true);
-    setOpenLogin(false);
-    toast.success("Login successful!");
+      // Store token and user data in localStorage
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+      setIsLoggedIn(true);
+      setIsAdmin(response.data.user?.status?.toLowerCase() === 'admin');
+      setOpenLogin(false);
+      toast.success("Login successful!");
 
-    // Navigate based on user status
-    const userStatus = response.data.user?.status?.toLowerCase();
-    if (userStatus === 'admin') {
-      navigate('/Dashboard');
-    } else if (userStatus === 'user') {
-      navigate('/Udashboard');
-    } else {
-      navigate('/');
+      // Navigate based on user status
+      const userStatus = response.data.user?.status?.toLowerCase();
+      if (userStatus === 'admin') {
+        navigate('/Dashboard');
+      } else if (userStatus === 'user') {
+        navigate('/37911');
+      } else {
+        navigate('/');
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-  } catch (error) {
-    console.error("Login error:", error);
-    toast.error(
-      error.response?.data?.message || "Login failed. Please try again."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -114,7 +128,7 @@ const handleLogin = async (e) => {
         email: "",
         password: "",
         phone: "",
-       
+      
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -129,8 +143,11 @@ const handleLogin = async (e) => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
+    setIsAdmin(false);
     toast.success("Logged out successfully");
+    navigate('/');
   };
 
   return (
@@ -177,12 +194,25 @@ const handleLogin = async (e) => {
             <div className="hidden md:flex items-center space-x-4 ml-4">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <AccountCircle className="text-gray-600 !text-[28px]" />
-                    <span className="ml-2 text-gray-900 text-sm font-medium">
-                      User
-                    </span>
-                  </div>
+                  {isAdmin ? (
+                    // Admin icons
+                    <>
+                      <div className="flex items-center">
+                        <AdminPanelSettings className="text-gray-600 !text-[28px]" />
+                        <span className="ml-2 text-gray-900 text-sm font-medium">
+                          Admin
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    // User icons
+                    <div className="flex items-center">
+                      <AccountCircle className="text-gray-600 !text-[28px]" />
+                      <span className="ml-2 text-gray-900 text-sm font-medium">
+                        User
+                      </span>
+                    </div>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="flex items-center text-white dark:text-black text-sm font-medium"
@@ -260,9 +290,13 @@ const handleLogin = async (e) => {
               {isLoggedIn ? (
                 <div className="px-3 py-2">
                   <div className="flex items-center">
-                    <AccountCircle className="text-gray-600 !text-[28px]" />
+                    {isAdmin ? (
+                      <AdminPanelSettings className="text-gray-600 !text-[28px]" />
+                    ) : (
+                      <AccountCircle className="text-gray-600 !text-[28px]" />
+                    )}
                     <span className="ml-2 text-gray-900 text-base font-medium">
-                      User
+                      {isAdmin ? 'Admin' : 'User'}
                     </span>
                   </div>
                   <button

@@ -16,10 +16,7 @@ import {
   Message as MessageIcon,
   CheckCircle as CheckCircleIcon,
   Message,
-  ShoppingCart,
-  ContactMail,
-  TextFields,
-  Subscriptions
+  ShoppingCart
 } from '@mui/icons-material';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -37,16 +34,15 @@ const inspectionData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 const navItems = [
-  { name: 'Dashboard', icon: <DashboardIcon />, href: '/Dashboard' },
-  { name: 'Orders', icon: <ShoppingCart />, href: '/7822289/2902' },
-  { name: 'Messages', icon: <Message />, href: '/9723089/9820' },
-  { name: 'Contacts', icon: <ContactMail />, href: '/1283782/6282' },
-  { name: 'Users', icon: <PeopleIcon />, href: '/8032782/0209' },
-  { name: 'Testimony', icon: <TextFields />, href: '/7822982/6728' },
-  { name: 'NewsLetter', icon: <Subscriptions />, href: '/9783989/1689' },
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/37911' },
+  { name: 'Orders', icon: <ShoppingCart />, href: '/orders' },
+  { name: 'Messages', icon: <Message />, href: '/messages' },
+  { name: 'Reports', icon: <BarChartIcon />, href: '/reports' },
+  { name: 'Users', icon: <PeopleIcon />, href: '/users' },
+  { name: 'Settings', icon: <SettingsIcon />, href: '/settings' }
 ];
 
-export const Dashboard = () => {
+export const UserDashboard = () => {
  
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -155,7 +151,7 @@ export const Dashboard = () => {
   );
 
   return (
-    <div className="flex h-screen mt-4 rounded-2xl bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
         <div 
@@ -165,7 +161,7 @@ export const Dashboard = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed lg:static z-30 ${sidebarOpen ? 'w-64' : 'w-20'} h-full bg-blue-800 rounded-2xl text-white transition-all duration-300 ease-in-out
+      <div className={`fixed lg:static z-30 ${sidebarOpen ? 'w-64' : 'w-20'} h-full bg-blue-800 text-white transition-all duration-300 ease-in-out
         ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-64'} lg:translate-x-0`}>
         
         <div className="flex items-center justify-between p-4 border-b border-blue-700">
@@ -206,7 +202,7 @@ export const Dashboard = () => {
             className="lg:hidden text-gray-500 hover:text-gray-700"
             aria-label="Open menu"
           >
-            {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            <MenuIcon />
           </button>
   
         </header>

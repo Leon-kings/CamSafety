@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 import {
   Add,
   Edit,
@@ -18,49 +18,76 @@ import {
   Close,
   Save,
   Cancel,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  ChevronLeft,
+  ChevronRight,
+  Dashboard as DashboardIcon,
+  ShoppingCart,
+  Message,
+  ContactMail,
+  People as PeopleIcon,
+  TextFields,
+  Subscriptions,
+} from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
+const navItems = [
+  { name: "Dashboard", icon: <DashboardIcon />, href: "/Dashboard" },
+  { name: "Orders", icon: <ShoppingCart />, href: "/7822289/2902" },
+  { name: "Messages", icon: <Message />, href: "/9723089/9820" },
+  { name: "Contacts", icon: <ContactMail />, href: "/1283782/6282" },
+  { name: "Users", icon: <PeopleIcon />, href: "/8032782/0209" },
+  { name: "Testimony", icon: <TextFields />, href: "/7822982/6728" },
+  { name: "NewsLetter", icon: <Subscriptions />, href: "/9783989/1689" },
+];
 
-const API_URL ='https://camera-safety.onrender.com/contact/messaging';
+const API_URL = "https://camera-safety.onrender.com/contact/messaging";
 
 // Status configuration
 const statusConfig = {
   pending: {
     icon: <Pending className="text-yellow-500" />,
     actionIcon: <CheckCircle />,
-    label: 'Pending',
-    color: 'bg-yellow-100 text-yellow-800',
-    nextStatus: 'processed',
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-800",
+    nextStatus: "processed",
   },
   processed: {
     icon: <CheckCircle className="text-green-500" />,
     actionIcon: <Warning />,
-    label: 'Processed',
-    color: 'bg-green-100 text-green-800',
-    nextStatus: 'rejected',
+    label: "Processed",
+    color: "bg-green-100 text-green-800",
+    nextStatus: "rejected",
   },
   rejected: {
     icon: <Warning className="text-red-500" />,
     actionIcon: <Pending />,
-    label: 'Rejected',
-    color: 'bg-red-100 text-red-800',
-    nextStatus: 'pending',
+    label: "Rejected",
+    color: "bg-red-100 text-red-800",
+    nextStatus: "pending",
   },
 };
 
 const contactService = {
   getContacts: async (page = 1, limit = 10) => {
     try {
-      const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`, {
-        timeout: 10000,
-      });
+      const response = await axios.get(
+        `${API_URL}?page=${page}&limit=${limit}`,
+        {
+          timeout: 10000,
+        }
+      );
       return {
         contacts: response.data?.contacts || [],
         totalPages: response.data?.totalPages || 1,
       };
     } catch (error) {
-      console.error('Failed to fetch contacts:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch contacts');
+      console.error("Failed to fetch contacts:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch contacts"
+      );
     }
   },
 
@@ -71,8 +98,10 @@ const contactService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to create contact:', error);
-      throw new Error(error.response?.data?.message || 'Failed to create contact');
+      console.error("Failed to create contact:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to create contact"
+      );
     }
   },
 
@@ -83,8 +112,10 @@ const contactService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to update contact:', error);
-      throw new Error(error.response?.data?.message || 'Failed to update contact');
+      console.error("Failed to update contact:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to update contact"
+      );
     }
   },
 
@@ -95,8 +126,10 @@ const contactService = {
       });
       return true;
     } catch (error) {
-      console.error('Failed to delete contact:', error);
-      throw new Error(error.response?.data?.message || 'Failed to delete contact');
+      console.error("Failed to delete contact:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to delete contact"
+      );
     }
   },
 
@@ -109,8 +142,10 @@ const contactService = {
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to update status:', error);
-      throw new Error(error.response?.data?.message || 'Failed to update status');
+      console.error("Failed to update status:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to update status"
+      );
     }
   },
 };
@@ -143,8 +178,11 @@ const ContactModal = ({
             <div className="p-6">
               <h2 className="text-xl font-bold mb-4 text-black">
                 {currentContact._id
-                  ? `Edit Contact (ID: ${currentContact._id.substring(0, 8)}...)`
-                  : 'Add New Contact'}
+                  ? `Edit Contact (ID: ${currentContact._id.substring(
+                      0,
+                      8
+                    )}...)`
+                  : "Add New Contact"}
               </h2>
 
               <div className="space-y-4">
@@ -172,7 +210,7 @@ const ContactModal = ({
                     value={currentContact.email}
                     onChange={onInputChange}
                     className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${
-                      currentContact._id ? 'bg-gray-100 cursor-not-allowed' : ''
+                      currentContact._id ? "bg-gray-100 cursor-not-allowed" : ""
                     }`}
                     required
                     disabled={!!currentContact._id}
@@ -214,7 +252,10 @@ const ContactModal = ({
                     </label>
                     <div className="flex gap-4">
                       {Object.entries(statusConfig).map(([key, config]) => (
-                        <label key={key} className="flex items-center space-x-2">
+                        <label
+                          key={key}
+                          className="flex items-center space-x-2"
+                        >
                           <input
                             type="radio"
                             name="status"
@@ -222,7 +263,7 @@ const ContactModal = ({
                             checked={currentContact.status === key}
                             onChange={() =>
                               onInputChange({
-                                target: { name: 'status', value: key },
+                                target: { name: "status", value: key },
                               })
                             }
                             className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
@@ -262,8 +303,8 @@ const ContactModal = ({
                   !currentContact.email ||
                   !currentContact.subject ||
                   !currentContact.message
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 {isProcessing ? (
@@ -273,16 +314,16 @@ const ContactModal = ({
                       transition={{
                         duration: 1,
                         repeat: Infinity,
-                        ease: 'linear',
+                        ease: "linear",
                       }}
                       className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full"
                     />
                     Processing...
                   </span>
                 ) : currentContact._id ? (
-                  'Update'
+                  "Update"
                 ) : (
-                  'Create'
+                  "Create"
                 )}
               </button>
             </div>
@@ -295,7 +336,7 @@ const ContactModal = ({
 
 const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchId, setSearchId] = useState('');
+  const [searchId, setSearchId] = useState("");
   const [contact, setContact] = useState(null);
   const [originalContact, setOriginalContact] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -305,7 +346,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
 
   const fetchContactById = async () => {
     if (!searchId.trim()) return;
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -315,7 +356,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
       setIsEditing(false);
       setDeleteConfirm(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Contact not found');
+      setError(err.response?.data?.message || "Contact not found");
       setContact(null);
       setOriginalContact(null);
     } finally {
@@ -329,7 +370,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
   };
 
   const clearSearch = () => {
-    setSearchId('');
+    setSearchId("");
     setContact(null);
     setOriginalContact(null);
     setError(null);
@@ -357,23 +398,23 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setContact(prev => ({
+    setContact((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleStatusChange = async (newStatus) => {
     try {
       setLoading(true);
-      const response = await axios.patch(`${API_URL}/${contact._id}/status`, { 
-        status: newStatus 
+      const response = await axios.patch(`${API_URL}/${contact._id}/status`, {
+        status: newStatus,
       });
       setContact(response.data.contact);
       setOriginalContact(response.data.contact);
       if (onContactsUpdated) onContactsUpdated();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update status');
+      setError(err.response?.data?.message || "Failed to update status");
     } finally {
       setLoading(false);
     }
@@ -388,7 +429,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
       setIsEditing(false);
       if (onContactsUpdated) onContactsUpdated();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update contact');
+      setError(err.response?.data?.message || "Failed to update contact");
     } finally {
       setLoading(false);
     }
@@ -406,7 +447,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
       if (onContactsUpdated) onContactsUpdated();
       closeModal();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete contact');
+      setError(err.response?.data?.message || "Failed to delete contact");
       setDeleteConfirm(false);
     } finally {
       setLoading(false);
@@ -441,7 +482,9 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-800">Search Contacts by ID</h2>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Search Contacts by ID
+                  </h2>
                   <button
                     onClick={closeModal}
                     className="text-gray-500 hover:text-gray-700"
@@ -464,7 +507,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                       disabled={!searchId.trim() || loading}
                       className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed"
                     >
-                      {loading ? 'Searching...' : 'Search'}
+                      {loading ? "Searching..." : "Search"}
                     </button>
                   </div>
                 </form>
@@ -473,7 +516,11 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                   <div className="flex justify-center py-8">
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="h-8 w-8 border-t-2 border-b-2 border-indigo-500 rounded-full"
                     />
                   </div>
@@ -495,13 +542,19 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                             <Mail className="text-indigo-500" />
                             Contact Details
                           </h3>
-                          <p className="text-sm text-gray-600">ID: {contact._id}</p>
+                          <p className="text-sm text-gray-600">
+                            ID: {contact._id}
+                          </p>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            statusConfig[contact.status]?.color || 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {statusConfig[contact.status]?.label || contact.status}
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              statusConfig[contact.status]?.color ||
+                              "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {statusConfig[contact.status]?.label ||
+                              contact.status}
                           </span>
                         </div>
                       </div>
@@ -548,7 +601,9 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                             className="px-3 py-1 border border-gray-300 rounded-md w-full text-black"
                           />
                         ) : (
-                          <p className="text-gray-800 font-medium">{contact.subject}</p>
+                          <p className="text-gray-800 font-medium">
+                            {contact.subject}
+                          </p>
                         )}
                       </div>
 
@@ -563,7 +618,9 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                             className="px-3 py-1 border border-gray-300 rounded-md w-full text-black"
                           />
                         ) : (
-                          <p className="text-gray-800 whitespace-pre-line">{contact.message}</p>
+                          <p className="text-gray-800 whitespace-pre-line">
+                            {contact.message}
+                          </p>
                         )}
                       </div>
 
@@ -609,7 +666,9 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                             </button>
                             <select
                               value={contact.status}
-                              onChange={(e) => handleStatusChange(e.target.value)}
+                              onChange={(e) =>
+                                handleStatusChange(e.target.value)
+                              }
                               disabled={loading}
                               className="px-3 py-1 border border-gray-300 rounded-md text-black bg-white"
                             >
@@ -623,7 +682,7 @@ const SearchContactsModal = ({ API_URL, onContactsUpdated }) => {
                               onClick={handleDelete}
                               disabled={loading}
                               className={`flex items-center gap-1 px-3 py-1 ${
-                                deleteConfirm ? 'bg-red-800' : 'bg-red-600'
+                                deleteConfirm ? "bg-red-800" : "bg-red-600"
                               } text-white rounded-md hover:bg-red-700 disabled:bg-red-400`}
                             >
                               {deleteConfirm ? (
@@ -658,14 +717,28 @@ export const ContactManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentContact, setCurrentContact] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-    status: 'pending',
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+    status: "pending",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+
+  //
+  // navbar
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen(!mobileSidebarOpen);
+  };
+  //
 
   const fetchContacts = async () => {
     setLoading(true);
@@ -690,11 +763,11 @@ export const ContactManagement = () => {
   const openModal = (contact = null) => {
     setCurrentContact(
       contact || {
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-        status: 'pending',
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        status: "pending",
       }
     );
     setIsModalOpen(true);
@@ -714,10 +787,10 @@ export const ContactManagement = () => {
     try {
       if (currentContact._id) {
         await contactService.updateContact(currentContact._id, currentContact);
-        toast.success('Contact updated successfully!');
+        toast.success("Contact updated successfully!");
       } else {
         await contactService.createContact(currentContact);
-        toast.success('Contact created successfully!');
+        toast.success("Contact created successfully!");
       }
       fetchContacts();
       closeModal();
@@ -729,11 +802,11 @@ export const ContactManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this contact?')) {
+    if (window.confirm("Are you sure you want to delete this contact?")) {
       setIsProcessing(true);
       try {
         await contactService.deleteContact(id);
-        toast.success('Contact deleted successfully!');
+        toast.success("Contact deleted successfully!");
         fetchContacts();
       } catch (err) {
         toast.error(err.message);
@@ -773,7 +846,7 @@ export const ContactManagement = () => {
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 sm:hidden">{label}</span>
           <span className="text-sm text-black">
-            {typeof value === 'string' && value.length > 50
+            {typeof value === "string" && value.length > 50
               ? `${value.substring(0, 50)}...`
               : value}
           </span>
@@ -783,231 +856,336 @@ export const ContactManagement = () => {
   };
 
   return (
-    <div className="min-h-screen mt-4 rounded-2xl bg-gray-50 p-2 sm:p-4 md:p-6">
-      <ToastContainer position="top-right" autoClose={3000} />
+    <>
+      <div className="w-full flex h-screen mt-4 rounded-2xl bg-gray-100">
+        {/* Mobile sidebar overlay */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            onClick={toggleMobileSidebar}
+          ></div>
+        )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
-        <h3 className="text-xl sm:text-2xl font-bold text-black">
-          Contact Management
-        </h3>
-        <div className="flex gap-2">
-          <SearchContactsModal API_URL={API_URL} onContactsUpdated={fetchContacts} />
-          <button
-            onClick={() => openModal()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1 sm:gap-2"
-          >
-            <Add fontSize="small" className="sm:font-size-medium" />
-            <span className="text-sm sm:text-base">Add Contact</span>
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
-          <ErrorOutline />
-          <span className="text-black">{error}</span>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="h-12 w-12 border-t-2 border-b-2 border-blue-500 rounded-full"
-          />
-        </div>
-      ) : (
-        <>
-          <div className="sm:hidden space-y-4">
-            {contacts?.length > 0 ? (
-              contacts.map((contact) => (
-                <motion.div
-                  key={contact._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white p-4 rounded-lg shadow"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium text-black">{contact.name}</h3>
-                      <p className="text-sm text-black">{contact.email}</p>
-                      <p className="text-xs text-gray-600">{contact.subject}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {statusConfig[contact.status]?.icon}
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          statusConfig[contact.status]?.color
-                        } text-black`}
-                      >
-                        {statusConfig[contact.status]?.label}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-700 line-clamp-2">
-                      {contact.message}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex justify-between items-center">
-                    <span className="text-xs text-black">
-                      {new Date(contact.createdAt).toLocaleDateString()}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openModal(contact)}
-                        className="text-blue-600 p-1"
-                      >
-                        <Edit fontSize="small" />
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleStatusChange(contact._id, contact.status)
-                        }
-                        className="text-black p-1"
-                      >
-                        {statusConfig[contact.status]?.actionIcon}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(contact._id)}
-                        className="text-red-600 p-1"
-                      >
-                        <Delete fontSize="small" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-black">No contacts found</div>
+        {/* Sidebar */}
+        <div
+          className={`fixed lg:static z-30 ${
+            sidebarOpen ? "w-64" : "w-20"
+          } h-full bg-blue-800 rounded-2xl text-white transition-all duration-300 ease-in-out
+                            ${
+                              mobileSidebarOpen
+                                ? "translate-x-0"
+                                : "-translate-x-64"
+                            } lg:translate-x-0`}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-blue-700">
+            {sidebarOpen && (
+              <h3 className="text-xl font-semibold">SafetyVision</h3>
             )}
+            <button
+              onClick={toggleSidebar}
+              className="text-white hover:text-blue-200 hidden lg:block"
+              aria-label="Toggle sidebar"
+            >
+              {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            </button>
           </div>
 
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {['Name', 'Email', 'Subject', 'Message', 'Status', 'Date', 'Actions'].map(
-                    (label) => renderTableCell(label, label, true)
-                  )}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {contacts?.length > 0 ? (
-                  contacts.map((contact) => (
-                    <motion.tr
-                      key={contact._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      {renderTableCell('Name', contact.name)}
-                      {renderTableCell('Email', contact.email)}
-                      {renderTableCell('Subject', contact.subject)}
-                      {renderTableCell('Message', contact.message)}
-                      <td className="px-2 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {statusConfig[contact.status]?.icon}
-                          <span
-                            className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
-                              statusConfig[contact.status]?.color
-                            } text-black`}
-                          >
-                            {statusConfig[contact.status]?.label}
-                          </span>
-                        </div>
-                      </td>
-                      {renderTableCell(
-                        'Date',
-                        new Date(contact.createdAt).toLocaleDateString()
-                      )}
-                      <td className="px-2 py-4 whitespace-nowrap">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => openModal(contact)}
-                            className="text-blue-600 hover:text-blue-900 p-1"
-                          >
-                            <Edit fontSize="small" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleStatusChange(contact._id, contact.status)
-                            }
-                            className="text-black hover:text-gray-900 p-1"
-                            title={`Change to ${
-                              statusConfig[contact.status]?.nextStatus
-                            }`}
-                          >
-                            {statusConfig[contact.status]?.actionIcon}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(contact._id)}
-                            className="text-red-600 hover:text-red-900 p-1"
-                          >
-                            <Delete fontSize="small" />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="px-4 py-6 text-center text-black">
-                      No contacts found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <nav className="p-4">
+            <ul className="space-y-2">
+              {navItems.map((item, index) => (
+                <li key={index}>
+                  <Link
+                    to={item.href}
+                    className={`flex items-center p-3 rounded-lg hover:bg-blue-700 transition-colors ${
+                      !sidebarOpen ? "justify-center" : ""
+                    }`}
+                    title={!sidebarOpen ? item.name : ""}
+                  >
+                    <span className={sidebarOpen ? "mr-3" : ""}>
+                      {item.icon}
+                    </span>
+                    {sidebarOpen && <span>{item.name}</span>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
 
-          {totalPages > 1 && (
-            <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-black">
-                Showing {(page - 1) * 10 + 1}-
-                {Math.min(page * 10, contacts.length)} of {totalPages * 10} contacts
-              </div>
+        {/* Main content */}
+        <div
+          className={`flex-1 overflow-auto transition-all duration-300 ${
+            sidebarOpen ? "lg:ml-6" : "lg:ml-4"
+          }`}
+        >
+          {/* Top bar */}
+          <header className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+            <button
+              onClick={toggleMobileSidebar}
+              className="lg:hidden text-gray-500 hover:text-gray-700"
+              aria-label="Open menu"
+            >
+              {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            </button>
+          </header>
+          <div className="min-h-screen mt-4 rounded-2xl bg-gray-50 p-2 sm:p-4 md:p-6">
+            <ToastContainer position="top-right" autoClose={3000} />
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet qui,
+              tempora reiciendis quos molestias molestiae itaque vel
+              consequuntur officia fuga earum, id animi dignissimos architecto
+              aspernatur repellendus ullam quasi in!
+            </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+              <h3 className="text-xl sm:text-2xl font-bold text-black">
+                Contact Management
+              </h3>
               <div className="flex gap-2">
+                <SearchContactsModal
+                  API_URL={API_URL}
+                  onContactsUpdated={fetchContacts}
+                />
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1 || isProcessing}
-                  className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg ${
-                    page === 1
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-200 hover:bg-gray-300 text-black'
-                  }`}
+                  onClick={() => openModal()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center gap-1 sm:gap-2"
                 >
-                  Previous
-                </button>
-                <span className="px-3 py-1 sm:px-4 sm:py-2 text-black">
-                  {page} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages || isProcessing}
-                  className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg ${
-                    page === totalPages
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-200 hover:bg-gray-300 text-black'
-                  }`}
-                >
-                  Next
+                  <Add fontSize="small" className="sm:font-size-medium" />
+                  <span className="text-sm sm:text-base">Add Contact</span>
                 </button>
               </div>
             </div>
-          )}
-        </>
-      )}
 
-      <ContactModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        currentContact={currentContact}
-        onInputChange={handleInputChange}
-        onSubmit={handleSubmit}
-        isProcessing={isProcessing}
-      />
-    </div>
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+                <ErrorOutline />
+                <span className="text-black">{error}</span>
+              </div>
+            )}
+
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="h-12 w-12 border-t-2 border-b-2 border-blue-500 rounded-full"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="sm:hidden space-y-4">
+                  {contacts?.length > 0 ? (
+                    contacts.map((contact) => (
+                      <motion.div
+                        key={contact._id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white p-4 rounded-lg shadow"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-black">
+                              {contact.name}
+                            </h3>
+                            <p className="text-sm text-black">
+                              {contact.email}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {contact.subject}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {statusConfig[contact.status]?.icon}
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                statusConfig[contact.status]?.color
+                              } text-black`}
+                            >
+                              {statusConfig[contact.status]?.label}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-700 line-clamp-2">
+                            {contact.message}
+                          </p>
+                        </div>
+                        <div className="mt-4 flex justify-between items-center">
+                          <span className="text-xs text-black">
+                            {new Date(contact.createdAt).toLocaleDateString()}
+                          </span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => openModal(contact)}
+                              className="text-blue-600 p-1"
+                            >
+                              <Edit fontSize="small" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleStatusChange(contact._id, contact.status)
+                              }
+                              className="text-black p-1"
+                            >
+                              {statusConfig[contact.status]?.actionIcon}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(contact._id)}
+                              className="text-red-600 p-1"
+                            >
+                              <Delete fontSize="small" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-black">
+                      No contacts found
+                    </div>
+                  )}
+                </div>
+
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {[
+                          "Name",
+                          "Email",
+                          "Subject",
+                          "Message",
+                          "Status",
+                          "Date",
+                          "Actions",
+                        ].map((label) => renderTableCell(label, label, true))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {contacts?.length > 0 ? (
+                        contacts.map((contact) => (
+                          <motion.tr
+                            key={contact._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            {renderTableCell("Name", contact.name)}
+                            {renderTableCell("Email", contact.email)}
+                            {renderTableCell("Subject", contact.subject)}
+                            {renderTableCell("Message", contact.message)}
+                            <td className="px-2 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                {statusConfig[contact.status]?.icon}
+                                <span
+                                  className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                                    statusConfig[contact.status]?.color
+                                  } text-black`}
+                                >
+                                  {statusConfig[contact.status]?.label}
+                                </span>
+                              </div>
+                            </td>
+                            {renderTableCell(
+                              "Date",
+                              new Date(contact.createdAt).toLocaleDateString()
+                            )}
+                            <td className="px-2 py-4 whitespace-nowrap">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => openModal(contact)}
+                                  className="text-blue-600 hover:text-blue-900 p-1"
+                                >
+                                  <Edit fontSize="small" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      contact._id,
+                                      contact.status
+                                    )
+                                  }
+                                  className="text-black hover:text-gray-900 p-1"
+                                  title={`Change to ${
+                                    statusConfig[contact.status]?.nextStatus
+                                  }`}
+                                >
+                                  {statusConfig[contact.status]?.actionIcon}
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(contact._id)}
+                                  className="text-red-600 hover:text-red-900 p-1"
+                                >
+                                  <Delete fontSize="small" />
+                                </button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="7"
+                            className="px-4 py-6 text-center text-black"
+                          >
+                            No contacts found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="text-sm text-black">
+                      Showing {(page - 1) * 10 + 1}-
+                      {Math.min(page * 10, contacts.length)} of{" "}
+                      {totalPages * 10} contacts
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1 || isProcessing}
+                        className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg ${
+                          page === 1
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                            : "bg-gray-200 hover:bg-gray-300 text-black"
+                        }`}
+                      >
+                        Previous
+                      </button>
+                      <span className="px-3 py-1 sm:px-4 sm:py-2 text-black">
+                        {page} / {totalPages}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages || isProcessing}
+                        className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg ${
+                          page === totalPages
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                            : "bg-gray-200 hover:bg-gray-300 text-black"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <ContactModal
+              isOpen={isModalOpen}
+              onClose={closeModal}
+              currentContact={currentContact}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+              isProcessing={isProcessing}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
-

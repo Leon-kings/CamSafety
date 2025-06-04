@@ -9,14 +9,13 @@ import {
   Add,
   Edit,
   Delete,
-  Star,
-  StarHalf,
-  StarBorder,
-  ErrorOutline,
   CheckCircle,
-  Cancel,
-  AccessTime,
+  Pending,
+  Archive,
+  Refresh,
+  ErrorOutline,
 } from "@mui/icons-material";
+import { SearchMessagesModal } from "../search/Msearch";
 import {
   Menu as MenuIcon,
   ChevronLeft,
@@ -30,7 +29,6 @@ import {
   Subscriptions,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
-import { SearchTestimonialsModal } from "../search/TestimonnySearch";
 
 const navItems = [
   { name: "Dashboard", icon: <DashboardIcon />, href: "/Dashboard" },
@@ -42,114 +40,155 @@ const navItems = [
   { name: "NewsLetter", icon: <Subscriptions />, href: "/9783989/1689" },
 ];
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://camera-safety.onrender.com";
+const API_URL = "https://camera-safety.onrender.com/messages/890";
 
-const testimonialService = {
-  getTestimonials: async (page = 1, limit = 100, status = "") => {
+// Status configuration
+const statusConfig = {
+  new: {
+    icon: <Pending className="text-blue-500" />,
+    actionIcon: <Refresh />,
+    label: "New",
+    color: "bg-blue-100 text-blue-800",
+    nextStatus: "in_progress",
+  },
+  in_progress: {
+    icon: <Refresh className="text-yellow-500" />,
+    actionIcon: <CheckCircle />,
+    label: "In Progress",
+    color: "bg-yellow-100 text-yellow-800",
+    nextStatus: "resolved",
+  },
+  resolved: {
+    icon: <CheckCircle className="text-green-500" />,
+    actionIcon: <Archive />,
+    label: "Resolved",
+    color: "bg-green-100 text-green-800",
+    nextStatus: "archived",
+  },
+  archived: {
+    icon: <Archive className="text-gray-500" />,
+    actionIcon: <Delete />,
+    label: "Archived",
+    color: "bg-gray-200 text-gray-800",
+    nextStatus: null,
+  },
+};
+
+const messageService = {
+  getMessages: async (page = 1, limit = 10, userEmail = null) => {
     try {
-      const params = { page, limit, status };
-      const response = await axios.get(`${API_URL}/api/testimonials`, {
-        params,
-        timeout: 10000,
+      const response = await axios.get(
+        `${API_URL}?page=${page}&limit=${limit}&email=${userEmail}`,
+        {
+          timeout: 10000,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      return {
+        messages: response.data?.data || [],
+        totalPages: response.data?.totalPages || 1,
+      };
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch messages"
+      );
+    }
+  },
+
+  createMessage: async (messageData) => {
+    try {
+      const response = await axios.post(API_URL, messageData, {
+        timeout: 8000,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
       return response.data;
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch testimonials"
+      console.error("Failed to create message:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to create message"
       );
-      console.error("API Error:", error.response);
-      throw error;
     }
   },
 
-  createTestimonial: async (testimonialData) => {
+  updateMessage: async (id, messageData) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/testimonials`,
-        testimonialData,
-        { timeout: 8000 }
-      );
-      toast.success("Testimonial submitted successfully!");
+      const response = await axios.put(`${API_URL}/${id}`, messageData, {
+        timeout: 8000,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       return response.data;
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to create testimonial"
+      console.error("Failed to update message:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to update message"
       );
-      throw error;
     }
   },
 
-  updateTestimonialStatus: async (id, status) => {
+  deleteMessage: async (id) => {
     try {
-      const response = await axios.put(
-        `${API_URL}/api/testimonials/status/${id}`,
-        { status }
-      );
-      toast.success("Status updated successfully!");
-      return response.data.data;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update status");
-      throw error;
-    }
-  },
-
-  deleteTestimonial: async (id) => {
-    try {
-      await axios.delete(`${API_URL}/api/testimonials/${id}`, {
+      await axios.delete(`${API_URL}/${id}`, {
         timeout: 5000,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
-      toast.success("Testimonial deleted successfully!");
       return true;
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to delete testimonial"
+      console.error("Failed to delete message:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to delete message"
       );
-      throw error;
+    }
+  },
+
+  updateMessageStatus: async (id, status) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/${id}/status`,
+        { status },
+        { 
+          timeout: 5000,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to update status"
+      );
     }
   },
 };
 
-export const TestimonyManagement = () => {
-  const [testimonials, setTestimonials] = useState([]);
+export const UserMessageManagement = () => {
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalTestimonials, setTotalTestimonials] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentTestimonial, setCurrentTestimonial] = useState({
+  const [currentMessage, setCurrentMessage] = useState({
     name: "",
     email: "",
-    profession: "",
-    rating: 5,
-    testimonial: "",
-    image: "",
-    status: "pending",
+    phone: "",
+    service: "",
+    message: "",
+    status: "new",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("");
-
-  // Status configuration
-  const statusConfig = {
-    pending: {
-      icon: <AccessTime className="text-yellow-500" />,
-      label: "Pending",
-      color: "bg-yellow-100 text-yellow-800",
-    },
-    approved: {
-      icon: <CheckCircle className="text-green-500" />,
-      label: "Approved",
-      color: "bg-green-100 text-green-800",
-    },
-    rejected: {
-      icon: <Cancel className="text-red-500" />,
-      label: "Rejected",
-      color: "bg-red-100 text-red-800",
-    },
-  };
+  const [userEmail, setUserEmail] = useState(null);
+  
   // navbar
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -162,41 +201,58 @@ export const TestimonyManagement = () => {
     setMobileSidebarOpen(!mobileSidebarOpen);
   };
 
-  const fetchTestimonials = async () => {
+  useEffect(() => {
+    // Get user email from localStorage or token
+    const storedEmail = localStorage.getItem('userEmail');
+    if (storedEmail) {
+      setUserEmail(storedEmail);
+    } else {
+      // If email not in localStorage, try to get it from token or API
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.email) {
+            setUserEmail(payload.email);
+          }
+        } catch (e) {
+          console.error("Could not get email from token");
+        }
+      }
+    }
+  }, []);
+
+  const fetchMessages = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await testimonialService.getTestimonials(
-        page,
-        100, // Increased limit to fetch more testimonials at once
-        statusFilter
-      );
-      console.log("API Response:", data); // Debug log
-      setTestimonials(data.data || []);
-      setTotalPages(data?.totalPages || 1);
-      setTotalTestimonials(data?.totalCount || 0);
+      const data = await messageService.getMessages(page, 10, userEmail);
+      setMessages(data.messages);
+      setTotalPages(data.totalPages);
     } catch (err) {
       setError(err.message);
-      console.error("Fetch Error:", err.response); // More detailed error logging
+      toast.error(err.message);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTestimonials();
-  }, [page, statusFilter]);
+    if (userEmail) {
+      fetchMessages();
+    }
+  }, [page, userEmail]);
 
-  const openModal = (testimonial = null) => {
-    setCurrentTestimonial(
-      testimonial || {
+  const openModal = (message = null) => {
+    setCurrentMessage(
+      message || {
         name: "",
-        email: "",
-        profession: "",
-        rating: 5,
-        testimonial: "",
-        image: "",
-        status: "pending",
+        email: userEmail || "",
+        phone: "",
+        service: "",
+        message: "",
+        status: "new",
       }
     );
     setIsModalOpen(true);
@@ -208,70 +264,57 @@ export const TestimonyManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentTestimonial((prev) => ({ ...prev, [name]: value }));
+    setCurrentMessage((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
-      if (currentTestimonial._id) {
-        await testimonialService.updateTestimonialStatus(
-          currentTestimonial._id,
-          currentTestimonial.status
-        );
+      if (currentMessage._id) {
+        await messageService.updateMessage(currentMessage._id, currentMessage);
+        toast.success("Message updated successfully!");
       } else {
-        await testimonialService.createTestimonial(currentTestimonial);
+        await messageService.createMessage(currentMessage);
+        toast.success("Message created successfully!");
       }
-      fetchTestimonials();
+      fetchMessages();
       closeModal();
     } catch (err) {
-      console.error("Submission Error:", err.response);
+      toast.error(err.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this testimonial?")) {
+    if (window.confirm("Are you sure you want to delete this message?")) {
       setIsProcessing(true);
       try {
-        await testimonialService.deleteTestimonial(id);
-        fetchTestimonials();
+        await messageService.deleteMessage(id);
+        toast.success("Message deleted successfully!");
+        fetchMessages();
       } catch (err) {
-        console.error("Deletion Error:", err.response);
+        toast.error(err.message);
       } finally {
         setIsProcessing(false);
       }
     }
   };
 
-  const handleStatusChange = async (id, status) => {
+  const handleStatusChange = async (id, currentStatus) => {
     setIsProcessing(true);
     try {
-      await testimonialService.updateTestimonialStatus(id, status);
-      fetchTestimonials();
+      const newStatus = statusConfig[currentStatus]?.nextStatus;
+      if (newStatus) {
+        await messageService.updateMessageStatus(id, newStatus);
+        toast.success(`Status updated to ${statusConfig[newStatus]?.label}`);
+        fetchMessages();
+      }
     } catch (err) {
-      console.error("Status Change Error:", err.response);
+      toast.error(err.message);
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const renderRatingStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(<Star key={i} className="text-yellow-500" />);
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(<StarHalf key={i} className="text-yellow-500" />);
-      } else {
-        stars.push(<StarBorder key={i} className="text-yellow-500" />);
-      }
-    }
-    return stars;
   };
 
   const renderTableCell = (label, value, isHeader = false) => {
@@ -309,9 +352,11 @@ export const TestimonyManagement = () => {
           className={`fixed lg:static z-30 ${
             sidebarOpen ? "w-64" : "w-20"
           } h-full bg-blue-800 rounded-2xl text-white transition-all duration-300 ease-in-out
-            ${
-              mobileSidebarOpen ? "translate-x-0" : "-translate-x-64"
-            } lg:translate-x-0`}
+                        ${
+                          mobileSidebarOpen
+                            ? "translate-x-0"
+                            : "-translate-x-64"
+                        } lg:translate-x-0`}
         >
           <div className="flex items-center justify-between p-4 border-b border-blue-700">
             {sidebarOpen && (
@@ -363,56 +408,50 @@ export const TestimonyManagement = () => {
             >
               {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
             </button>
+            {userEmail && (
+              <div className="text-sm text-gray-600">
+                Showing messages for: <span className="font-semibold">{userEmail}</span>
+              </div>
+            )}
           </header>
-          <div className=" mt-4 rounded-2xl bg-gray-50 sm:p-4 md:p-6">
+          <div className="min-h-screen mt-4 rounded-2xl bg-gray-50 p-2 sm:p-4 md:p-6">
             <ToastContainer position="top-right" autoClose={3000} />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex,
-              minus. Harum earum adipisci at quae a ab, ea laborum temporibus
-              pariatur? Consequuntur, ex aut reiciendis atque distinctio maxime
-              ullam ipsa?
-            </p>
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h3 className="text-2xl font-bold text-black">
-                Testimonial Management
-              </h3>
-              <SearchTestimonialsModal />
-              <div className="flex flex-col sm:flex-row gap-3 sm:w-auto">
+            
+            {/* Mobile Header */}
+            <div className="w-full">
+              <div className="sm:hidden flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-black">Your Messages</h3>
                 <button
                   onClick={() => openModal()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                  className="bg-blue-600 text-white p-2 rounded-lg"
                 >
                   <Add />
-                  <span className="md:inline">Add Testimonial</span>
                 </button>
               </div>
+              <SearchMessagesModal 
+                API_URL="https://camera-safety.onrender.com/messages/890"
+                userEmail={userEmail}
+              />
             </div>
-
-            {/* Summary Stats */}
-            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h4 className="text-sm font-medium text-gray-500">
-                  Total Testimonials
-                </h4>
-                <p className="text-2xl font-bold text-black">
-                  {totalTestimonials}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h4 className="text-sm font-medium text-gray-500">Approved</h4>
-                <p className="text-2xl font-bold text-green-600">
-                  {testimonials.filter((t) => t.status === "approved").length}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h4 className="text-sm font-medium text-gray-500">Pending</h4>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {testimonials.filter((t) => t.status === "pending").length}
-                </p>
-              </div>
+            
+            {/* Desktop Header */}
+            <div className="hidden sm:flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-black">
+                Your Messages
+              </h3>
+              <button
+                onClick={() => openModal()}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+              >
+                <Add />
+                <span className="hidden md:inline">Add Message</span>
+              </button>
+              <SearchMessagesModal 
+                API_URL="https://camera-safety.onrender.com/messages/890"
+                userEmail={userEmail}
+              />
             </div>
-
+            
             {/* Error Display */}
             {error && (
               <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
@@ -420,7 +459,7 @@ export const TestimonyManagement = () => {
                 <span className="text-black">{error}</span>
               </div>
             )}
-
+            
             {/* Loading State */}
             {loading ? (
               <div className="flex justify-center items-center h-64">
@@ -432,12 +471,12 @@ export const TestimonyManagement = () => {
               </div>
             ) : (
               <>
-                {/* Mobile Cards */}
+                {/* Mobile Cards View */}
                 <div className="sm:hidden space-y-4">
-                  {testimonials.length > 0 ? (
-                    testimonials.map((testimonial) => (
+                  {messages?.length > 0 ? (
+                    messages.map((message) => (
                       <motion.div
-                        key={testimonial._id}
+                        key={message._id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-white p-4 rounded-lg shadow"
@@ -445,47 +484,57 @@ export const TestimonyManagement = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-medium text-black">
-                              {testimonial.name}
+                              {message.name}
                             </h3>
-                            <p className="text-sm text-gray-600">
-                              {testimonial.profession}
+                            <p className="text-sm text-black">
+                              {message.email}
                             </p>
-                            <div className="flex items-center mt-1">
-                              {renderRatingStars(testimonial.rating)}
-                              <span className="ml-2 text-sm text-gray-600">
-                                ({testimonial.rating.toFixed(1)})
-                              </span>
-                            </div>
+                            <p className="text-xs text-gray-600">
+                              {message.service}
+                            </p>
                           </div>
                           <div className="flex items-center gap-1">
-                            {statusConfig[testimonial.status]?.icon}
+                            {statusConfig[message.status]?.icon}
                             <span
                               className={`text-xs px-2 py-1 rounded-full ${
-                                statusConfig[testimonial.status]?.color
+                                statusConfig[message.status]?.color
                               } text-black`}
                             >
-                              {statusConfig[testimonial.status]?.label}
+                              {statusConfig[message.status]?.label}
                             </span>
                           </div>
                         </div>
-                        <p className="mt-3 text-sm text-gray-700">
-                          {testimonial.testimonial}
-                        </p>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-700 line-clamp-2">
+                            {message.message}
+                          </p>
+                        </div>
                         <div className="mt-4 flex justify-between items-center">
                           <span className="text-xs text-black">
-                            {new Date(
-                              testimonial.createdAt
-                            ).toLocaleDateString()}
+                            {new Date(message.createdAt).toLocaleDateString()}
                           </span>
                           <div className="flex gap-2">
                             <button
-                              onClick={() => openModal(testimonial)}
+                              onClick={() => openModal(message)}
                               className="text-blue-600 p-1"
                             >
                               <Edit fontSize="small" />
                             </button>
+                            {statusConfig[message.status]?.nextStatus && (
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(
+                                    message._id,
+                                    message.status
+                                  )
+                                }
+                                className="text-black p-1"
+                              >
+                                {statusConfig[message.status]?.actionIcon}
+                              </button>
+                            )}
                             <button
-                              onClick={() => handleDelete(testimonial._id)}
+                              onClick={() => handleDelete(message._id)}
                               className="text-red-600 p-1"
                             >
                               <Delete fontSize="small" />
@@ -496,98 +545,86 @@ export const TestimonyManagement = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-black">
-                      No testimonials found
+                      {userEmail ? `No messages found for ${userEmail}` : "No messages found"}
                     </div>
                   )}
                 </div>
 
-                {/* Desktop Table */}
+                {/* Desktop Table View */}
                 <div className="hidden sm:block overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         {renderTableCell("Name", "Name", true)}
-                        {renderTableCell("Profession", "Profession", true)}
-                        {renderTableCell("Rating", "Rating", true)}
-                        {renderTableCell("Testimonial", "Testimonial", true)}
+                        {renderTableCell("Email", "Email", true)}
+                        {renderTableCell("Service", "Service", true)}
+                        {renderTableCell("Message", "Message", true)}
                         {renderTableCell("Status", "Status", true)}
                         {renderTableCell("Date", "Date", true)}
                         {renderTableCell("Actions", "Actions", true)}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {testimonials.length > 0 ? (
-                        testimonials.map((test) => (
+                      {messages?.length > 0 ? (
+                        messages.map((message) => (
                           <motion.tr
-                            key={test._id}
+                            key={message._id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                           >
-                            {renderTableCell("Name", test.name)}
-                            {renderTableCell("Profession", test.profession)}
+                            {renderTableCell("Name", message.name)}
+                            {renderTableCell("Email", message.email)}
+                            {renderTableCell("Service", message.service)}
+                            {renderTableCell(
+                              "Message",
+                              message.message.length > 50
+                                ? `${message.message.substring(0, 50)}...`
+                                : message.message
+                            )}
                             <td className="px-2 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                {renderRatingStars(test.rating)}
-                                <span className="ml-2 text-sm text-gray-600">
-                                  ({test.rating.toFixed(1)})
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-2 py-4">
-                              <p className="text-sm text-gray-700 line-clamp-2">
-                                {test.testimonial}
-                              </p>
-                            </td>
-                            <td className="px-2 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                {statusConfig[test.status]?.icon}
+                                {statusConfig[message.status]?.icon}
                                 <span
                                   className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
-                                    statusConfig[test.status]?.color
+                                    statusConfig[message.status]?.color
                                   } text-black`}
                                 >
-                                  {statusConfig[test.status]?.label}
+                                  {statusConfig[message.status]?.label}
                                 </span>
                               </div>
                             </td>
                             {renderTableCell(
                               "Date",
-                              new Date(test.createdAt).toLocaleDateString()
+                              new Date(message.createdAt).toLocaleDateString()
                             )}
                             <td className="px-2 py-4 whitespace-nowrap">
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => openModal(test)}
+                                  onClick={() => openModal(message)}
                                   className="text-blue-600 hover:text-blue-900 p-1"
                                 >
                                   <Edit fontSize="small" />
                                 </button>
                                 <button
-                                  onClick={() => handleDelete(test._id)}
+                                  onClick={() => handleDelete(message._id)}
                                   className="text-red-600 hover:text-red-900 p-1"
                                 >
                                   <Delete fontSize="small" />
                                 </button>
-                                {test.status !== "approved" && (
+                                {statusConfig[message.status]?.nextStatus && (
                                   <button
                                     onClick={() =>
-                                      handleStatusChange(test._id, "approved")
+                                      handleStatusChange(
+                                        message._id,
+                                        message.status
+                                      )
                                     }
-                                    className="text-green-600 hover:text-green-900 p-1"
-                                    title="Approve"
+                                    className="text-black hover:text-gray-900 p-1"
+                                    title={`Change to ${
+                                      statusConfig[message.status]?.nextStatus
+                                    }`}
                                   >
-                                    <CheckCircle fontSize="small" />
-                                  </button>
-                                )}
-                                {test.status !== "rejected" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(test._id, "rejected")
-                                    }
-                                    className="text-red-600 hover:text-red-900 p-1"
-                                    title="Reject"
-                                  >
-                                    <Cancel fontSize="small" />
+                                    {statusConfig[message.status]?.actionIcon}
                                   </button>
                                 )}
                               </div>
@@ -600,7 +637,7 @@ export const TestimonyManagement = () => {
                             colSpan="7"
                             className="px-4 py-6 text-center text-black"
                           >
-                            No testimonials found
+                            {userEmail ? `No messages found for ${userEmail}` : "No messages found"}
                           </td>
                         </tr>
                       )}
@@ -612,9 +649,9 @@ export const TestimonyManagement = () => {
                 {totalPages > 1 && (
                   <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="text-sm text-black">
-                      Showing {(page - 1) * 100 + 1}-
-                      {Math.min(page * 100, totalTestimonials)} of{" "}
-                      {totalTestimonials} testimonials
+                      Showing {(page - 1) * 10 + 1}-
+                      {Math.min(page * 10, messages.length)} of{" "}
+                      {messages.length} messages
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -649,8 +686,8 @@ export const TestimonyManagement = () => {
                 )}
               </>
             )}
-
-            {/* Testimonial Modal */}
+            
+            {/* Message Modal */}
             <AnimatePresence>
               {isModalOpen && (
                 <motion.div
@@ -669,9 +706,12 @@ export const TestimonyManagement = () => {
                   >
                     <div className="p-6">
                       <h2 className="text-xl font-bold mb-4 text-black">
-                        {currentTestimonial._id
-                          ? `Edit Testimonial`
-                          : "Add New Testimonial"}
+                        {currentMessage._id
+                          ? `Edit Message (ID: ${currentMessage._id.substring(
+                              0,
+                              8
+                            )}...)`
+                          : "Add New Message"}
                       </h2>
                       <div className="space-y-4">
                         <div>
@@ -681,7 +721,7 @@ export const TestimonyManagement = () => {
                           <input
                             type="text"
                             name="name"
-                            value={currentTestimonial.name}
+                            value={currentMessage.name}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             required
@@ -694,88 +734,90 @@ export const TestimonyManagement = () => {
                           <input
                             type="email"
                             name="email"
-                            value={currentTestimonial.email}
+                            value={currentMessage.email}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             required
+                            readOnly={!!userEmail}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-black mb-1">
-                            Profession *
+                            Phone
                           </label>
                           <input
-                            type="text"
-                            name="profession"
-                            value={currentTestimonial.profession}
+                            type="tel"
+                            name="phone"
+                            value={currentMessage.phone}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                            required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-black mb-1">
-                            Rating *
+                            Service *
                           </label>
                           <select
-                            name="rating"
-                            value={currentTestimonial.rating}
+                            name="service"
+                            value={currentMessage.service}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             required
                           >
-                            {[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map(
-                              (value) => (
-                                <option key={value} value={value}>
-                                  {value} Stars
-                                </option>
-                              )
-                            )}
+                            <option value="">Select a service</option>
+                            <option value="Web Development">
+                              Web Development
+                            </option>
+                            <option value="Consulting">Consulting</option>
+                            <option value="Support">Support</option>
+                            <option value="Other">Other</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-black mb-1">
-                            Testimonial *
+                            Message *
                           </label>
                           <textarea
-                            name="testimonial"
-                            value={currentTestimonial.testimonial}
+                            name="message"
+                            value={currentMessage.message}
                             onChange={handleInputChange}
+                            rows={4}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                            rows="4"
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-black mb-1">
-                            Image URL
+                            Status *
                           </label>
-                          <input
-                            type="url"
-                            name="image"
-                            value={currentTestimonial.image}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                          />
-                        </div>
-                        {currentTestimonial._id && (
-                          <div>
-                            <label className="block text-sm font-medium text-black mb-1">
-                              Status *
-                            </label>
-                            <select
-                              name="status"
-                              value={currentTestimonial.status}
-                              onChange={handleInputChange}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                              required
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="approved">Approved</option>
-                              <option value="rejected">Rejected</option>
-                            </select>
+                          <div className="flex gap-4">
+                            {Object.entries(statusConfig).map(
+                              ([key, config]) => (
+                                <label
+                                  key={key}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <input
+                                    type="radio"
+                                    name="status"
+                                    value={key}
+                                    checked={currentMessage.status === key}
+                                    onChange={() =>
+                                      handleInputChange({
+                                        target: { name: "status", value: key },
+                                      })
+                                    }
+                                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+                                  />
+                                  <span className="flex items-center text-black">
+                                    {config.icon}
+                                    <span className="ml-1">{config.label}</span>
+                                  </span>
+                                </label>
+                              )
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
@@ -790,17 +832,17 @@ export const TestimonyManagement = () => {
                         onClick={handleSubmit}
                         disabled={
                           isProcessing ||
-                          !currentTestimonial.name ||
-                          !currentTestimonial.email ||
-                          !currentTestimonial.profession ||
-                          !currentTestimonial.testimonial
+                          !currentMessage.name ||
+                          !currentMessage.email ||
+                          !currentMessage.service ||
+                          !currentMessage.message
                         }
                         className={`px-4 py-2 rounded-md text-white ${
                           isProcessing ||
-                          !currentTestimonial.name ||
-                          !currentTestimonial.email ||
-                          !currentTestimonial.profession ||
-                          !currentTestimonial.testimonial
+                          !currentMessage.name ||
+                          !currentMessage.email ||
+                          !currentMessage.service ||
+                          !currentMessage.message
                             ? "bg-blue-400 cursor-not-allowed"
                             : "bg-blue-600 hover:bg-blue-700"
                         }`}
@@ -818,10 +860,10 @@ export const TestimonyManagement = () => {
                             />
                             Processing...
                           </span>
-                        ) : currentTestimonial._id ? (
+                        ) : currentMessage._id ? (
                           "Update"
                         ) : (
-                          "Submit"
+                          "Create"
                         )}
                       </button>
                     </div>

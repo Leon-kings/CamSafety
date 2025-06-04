@@ -18,6 +18,10 @@ import { ContactManagement } from "./components/dash_components/admin/contacts/m
 import { NewsLetterManagement } from "./components/dash_components/admin/newsletter/NewsLetterManagement";
 import { TestimonyManagement } from "./components/dash_components/admin/testimony/management/TestimonyManagement";
 import { OrderManagement } from "./components/dash_components/admin/orders/management/OrderManagement";
+import { UserDashboard } from "./components/dashboard/UserDashboard";
+import { UserNewsLetterManagement } from "./components/dash_components/users/newsletter/UserNewsLetter";
+// user
+
 
 // Add a simple auth check function
 const isAuthenticated = () => {
@@ -66,17 +70,20 @@ export default function App() {
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFound />} />
         {/* protected route */}
-        <Route
+        {/* <Route
           path="/Dashboard"
           element={<ProtectedRoute element={Dashboard} />}
-        />
-        {/* <Route path="/Dashboard" element={<Dashboard />} /> */}
-        <Route path="/8032" element={<UserManagement />} />
-        <Route path="/97230" element={<MessageManagement />} />
-        <Route path="/1283" element={<ContactManagement />} />
-        <Route path="/97839" element={<NewsLetterManagement />} />
-        <Route path="/7822982" element={<TestimonyManagement />} />
-        <Route path="/7822" element={<OrderManagement />} />
+        /> */}
+        <Route path="/Dashboard" element={<Dashboard />} />
+        <Route path="/8032782/0209" element={<UserManagement />} />
+        <Route path="/9723089/9820" element={<MessageManagement />} />
+        <Route path="/1283782/6282" element={<ContactManagement />} />
+        <Route path="/9783989/1689" element={<NewsLetterManagement />} />
+        <Route path="/7822982/6728" element={<TestimonyManagement />} />
+        <Route path="/7822289/2902" element={<OrderManagement />} />
+        {/*  */}
+        <Route path="/37911" element={<UserDashboard />} />
+        <Route path="/92092" element={<UserNewsLetterManagement />} />
         {/*  */}
       </Routes>
       <Footer />
