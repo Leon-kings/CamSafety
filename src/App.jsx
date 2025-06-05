@@ -20,6 +20,7 @@ import { TestimonyManagement } from "./components/dash_components/admin/testimon
 import { OrderManagement } from "./components/dash_components/admin/orders/management/OrderManagement";
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { UserNewsLetterManagement } from "./components/dash_components/users/newsletter/UserNewsLetter";
+import { UserMessageManagement } from "./components/dash_components/users/messages/UserMessageManagement";
 // user
 
 
@@ -84,6 +85,7 @@ export default function App() {
         {/*  */}
         <Route path="/37911" element={<UserDashboard />} />
         <Route path="/92092" element={<UserNewsLetterManagement />} />
+        <Route path="/90203" element={<UserMessageManagement />} />
         {/*  */}
       </Routes>
       <Footer />
