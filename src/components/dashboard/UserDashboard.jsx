@@ -16,7 +16,10 @@ import {
   Message as MessageIcon,
   CheckCircle as CheckCircleIcon,
   Message,
-  ShoppingCart
+  ShoppingCart,
+  Subscriptions,
+  ContactMail,
+  TextFields
 } from '@mui/icons-material';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -35,11 +38,11 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 const navItems = [
   { name: 'Dashboard', icon: <DashboardIcon />, href: '/37911' },
-  { name: 'Orders', icon: <ShoppingCart />, href: '/orders' },
-  { name: 'Messages', icon: <Message />, href: '/messages' },
-  { name: 'Reports', icon: <BarChartIcon />, href: '/reports' },
-  { name: 'Users', icon: <PeopleIcon />, href: '/users' },
-  { name: 'Settings', icon: <SettingsIcon />, href: '/settings' }
+  { name: 'Orders', icon: <ShoppingCart />, href: '/78631/83672' },
+  { name: 'Messages', icon: <Message />, href: '/90203/89382' },
+  { name: 'Contact', icon: <ContactMail />, href: '/78320/23943' },
+  { name: 'NewsLetter', icon: <Subscriptions />, href: '/92092/93082' },
+  { name: 'Testimony', icon: <TextFields />, href: '/43272/37191' },
 ];
 
 export const UserDashboard = () => {

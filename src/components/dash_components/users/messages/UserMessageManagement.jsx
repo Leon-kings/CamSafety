@@ -15,7 +15,6 @@ import {
   Refresh,
   ErrorOutline,
 } from "@mui/icons-material";
-import { SearchMessagesModal } from "../search/Msearch";
 import {
   Menu as MenuIcon,
   ChevronLeft,
@@ -31,13 +30,12 @@ import {
 import { Link } from "react-router-dom";
 
 const navItems = [
-  { name: "Dashboard", icon: <DashboardIcon />, href: "/Dashboard" },
-  { name: "Orders", icon: <ShoppingCart />, href: "/7822289/2902" },
-  { name: "Messages", icon: <Message />, href: "/9723089/9820" },
-  { name: "Contacts", icon: <ContactMail />, href: "/1283782/6282" },
-  { name: "Users", icon: <PeopleIcon />, href: "/8032782/0209" },
-  { name: "Testimony", icon: <TextFields />, href: "/7822982/6728" },
-  { name: "NewsLetter", icon: <Subscriptions />, href: "/9783989/1689" },
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/37911' },
+  { name: 'Orders', icon: <ShoppingCart />, href: '/78631/83672' },
+  { name: 'Messages', icon: <Message />, href: '/90203/89382' },
+  { name: 'Contact', icon: <ContactMail />, href: '/78320/23943' },
+  { name: 'NewsLetter', icon: <Subscriptions />, href: '/92092/93082' },
+  { name: 'Testimony', icon: <TextFields />, href: '/43272/37191' },
 ];
 
 const API_URL = "https://camera-safety.onrender.com/messages/890";
@@ -214,6 +212,7 @@ export const UserMessageManagement = () => {
           const payload = JSON.parse(atob(token.split('.')[1]));
           if (payload.email) {
             setUserEmail(payload.email);
+            localStorage.setItem('userEmail', payload.email);
           }
         } catch (e) {
           console.error("Could not get email from token");
@@ -227,7 +226,11 @@ export const UserMessageManagement = () => {
     setError(null);
     try {
       const data = await messageService.getMessages(page, 10, userEmail);
-      setMessages(data.messages);
+      // Filter messages to only show those that match the logged-in user's email
+      const filteredMessages = data.messages.filter(message => 
+        message.email?.toLowerCase() === userEmail?.toLowerCase()
+      );
+      setMessages(filteredMessages);
       setTotalPages(data.totalPages);
     } catch (err) {
       setError(err.message);
@@ -248,7 +251,7 @@ export const UserMessageManagement = () => {
     setCurrentMessage(
       message || {
         name: "",
-        email: userEmail || "",
+        email: userEmail || "", // Pre-fill with user's email
         phone: "",
         service: "",
         message: "",
@@ -270,11 +273,17 @@ export const UserMessageManagement = () => {
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
+      // Ensure the message is associated with the logged-in user
+      const messageToSubmit = {
+        ...currentMessage,
+        email: userEmail // Force the email to be the logged-in user's email
+      };
+
       if (currentMessage._id) {
-        await messageService.updateMessage(currentMessage._id, currentMessage);
+        await messageService.updateMessage(currentMessage._id, messageToSubmit);
         toast.success("Message updated successfully!");
       } else {
-        await messageService.createMessage(currentMessage);
+        await messageService.createMessage(messageToSubmit);
         toast.success("Message created successfully!");
       }
       fetchMessages();
@@ -410,7 +419,7 @@ export const UserMessageManagement = () => {
             </button>
             {userEmail && (
               <div className="text-sm text-gray-600">
-                Showing messages for: <span className="font-semibold">{userEmail}</span>
+                Showing your messages
               </div>
             )}
           </header>
@@ -428,10 +437,6 @@ export const UserMessageManagement = () => {
                   <Add />
                 </button>
               </div>
-              <SearchMessagesModal 
-                API_URL="https://camera-safety.onrender.com/messages/890"
-                userEmail={userEmail}
-              />
             </div>
             
             {/* Desktop Header */}
@@ -446,10 +451,6 @@ export const UserMessageManagement = () => {
                 <Add />
                 <span className="hidden md:inline">Add Message</span>
               </button>
-              <SearchMessagesModal 
-                API_URL="https://camera-safety.onrender.com/messages/890"
-                userEmail={userEmail}
-              />
             </div>
             
             {/* Error Display */}
@@ -487,9 +488,6 @@ export const UserMessageManagement = () => {
                               {message.name}
                             </h3>
                             <p className="text-sm text-black">
-                              {message.email}
-                            </p>
-                            <p className="text-xs text-gray-600">
                               {message.service}
                             </p>
                           </div>
@@ -545,7 +543,7 @@ export const UserMessageManagement = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-black">
-                      {userEmail ? `No messages found for ${userEmail}` : "No messages found"}
+                      {userEmail ? "You have no messages yet" : "No messages found"}
                     </div>
                   )}
                 </div>
@@ -556,7 +554,6 @@ export const UserMessageManagement = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         {renderTableCell("Name", "Name", true)}
-                        {renderTableCell("Email", "Email", true)}
                         {renderTableCell("Service", "Service", true)}
                         {renderTableCell("Message", "Message", true)}
                         {renderTableCell("Status", "Status", true)}
@@ -573,7 +570,6 @@ export const UserMessageManagement = () => {
                             animate={{ opacity: 1, y: 0 }}
                           >
                             {renderTableCell("Name", message.name)}
-                            {renderTableCell("Email", message.email)}
                             {renderTableCell("Service", message.service)}
                             {renderTableCell(
                               "Message",
@@ -634,10 +630,10 @@ export const UserMessageManagement = () => {
                       ) : (
                         <tr>
                           <td
-                            colSpan="7"
+                            colSpan="6"
                             className="px-4 py-6 text-center text-black"
                           >
-                            {userEmail ? `No messages found for ${userEmail}` : "No messages found"}
+                            {userEmail ? "You have no messages yet" : "No messages found"}
                           </td>
                         </tr>
                       )}
@@ -734,11 +730,11 @@ export const UserMessageManagement = () => {
                           <input
                             type="email"
                             name="email"
-                            value={currentMessage.email}
+                            value={currentMessage.email || userEmail}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             required
-                            readOnly={!!userEmail}
+                            readOnly
                           />
                         </div>
                         <div>
@@ -833,14 +829,12 @@ export const UserMessageManagement = () => {
                         disabled={
                           isProcessing ||
                           !currentMessage.name ||
-                          !currentMessage.email ||
                           !currentMessage.service ||
                           !currentMessage.message
                         }
                         className={`px-4 py-2 rounded-md text-white ${
                           isProcessing ||
                           !currentMessage.name ||
-                          !currentMessage.email ||
                           !currentMessage.service ||
                           !currentMessage.message
                             ? "bg-blue-400 cursor-not-allowed"

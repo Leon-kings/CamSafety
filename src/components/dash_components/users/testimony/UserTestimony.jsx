@@ -30,28 +30,29 @@ import {
   Subscriptions,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
-import { SearchTestimonialsModal } from "../search/TestimonnySearch";
 
 const navItems = [
-  { name: "Dashboard", icon: <DashboardIcon />, href: "/Dashboard" },
-  { name: "Orders", icon: <ShoppingCart />, href: "/7822289/2902" },
-  { name: "Messages", icon: <Message />, href: "/9723089/9820" },
-  { name: "Contacts", icon: <ContactMail />, href: "/1283782/6282" },
-  { name: "Users", icon: <PeopleIcon />, href: "/8032782/0209" },
-  { name: "Testimony", icon: <TextFields />, href: "/7822982/6728" },
-  { name: "NewsLetter", icon: <Subscriptions />, href: "/9783989/1689" },
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/37911' },
+  { name: 'Orders', icon: <ShoppingCart />, href: '/78631/83672' },
+  { name: 'Messages', icon: <Message />, href: '/90203/89382' },
+  { name: 'Contact', icon: <ContactMail />, href: '/78320/23943' },
+  { name: 'NewsLetter', icon: <Subscriptions />, href: '/92092/93082' },
+  { name: 'Testimony', icon: <TextFields />, href: '/43272/37191' },
 ];
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://camera-safety.onrender.com";
 
 const testimonialService = {
-  getTestimonials: async (page = 1, limit = 100, status = "") => {
+  getTestimonials: async (page = 1, limit = 100, status = "", email = "") => {
     try {
-      const params = { page, limit, status };
+      const params = { page, limit, status, email };
       const response = await axios.get(`${API_URL}/api/testimonials`, {
         params,
         timeout: 10000,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
       return response.data;
     } catch (error) {
@@ -70,7 +71,12 @@ const testimonialService = {
       const response = await axios.post(
         `${API_URL}/api/testimonials`,
         testimonialData,
-        { timeout: 8000 }
+        { 
+          timeout: 8000,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
       );
       toast.success("Testimonial submitted successfully!");
       return response.data;
@@ -86,7 +92,12 @@ const testimonialService = {
     try {
       const response = await axios.put(
         `${API_URL}/api/testimonials/status/${id}`,
-        { status }
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
       );
       toast.success("Status updated successfully!");
       return response.data.data;
@@ -100,6 +111,9 @@ const testimonialService = {
     try {
       await axios.delete(`${API_URL}/api/testimonials/${id}`, {
         timeout: 5000,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
       toast.success("Testimonial deleted successfully!");
       return true;
@@ -112,7 +126,7 @@ const testimonialService = {
   },
 };
 
-export const TestimonyManagement = () => {
+export const UserTestimonyManagement = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -131,6 +145,7 @@ export const TestimonyManagement = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   // Status configuration
   const statusConfig = {
@@ -162,6 +177,28 @@ export const TestimonyManagement = () => {
     setMobileSidebarOpen(!mobileSidebarOpen);
   };
 
+  useEffect(() => {
+    // Get user email from localStorage or token
+    const storedEmail = localStorage.getItem('userEmail');
+    if (storedEmail) {
+      setUserEmail(storedEmail);
+    } else {
+      // If email not in localStorage, try to get it from token or API
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.email) {
+            setUserEmail(payload.email);
+            localStorage.setItem('userEmail', payload.email);
+          }
+        } catch (e) {
+          console.error("Could not get email from token");
+        }
+      }
+    }
+  }, []);
+
   const fetchTestimonials = async () => {
     setLoading(true);
     setError(null);
@@ -169,12 +206,17 @@ export const TestimonyManagement = () => {
       const data = await testimonialService.getTestimonials(
         page,
         100, // Increased limit to fetch more testimonials at once
-        statusFilter
+        statusFilter,
+        userEmail
       );
       console.log("API Response:", data); // Debug log
-      setTestimonials(data.data || []);
+      // Additional client-side filtering
+      const filteredTestimonials = data.data.filter(testimonial => 
+        testimonial.email?.toLowerCase() === userEmail?.toLowerCase()
+      );
+      setTestimonials(filteredTestimonials || []);
       setTotalPages(data?.totalPages || 1);
-      setTotalTestimonials(data?.totalCount || 0);
+      setTotalTestimonials(filteredTestimonials?.length || 0);
     } catch (err) {
       setError(err.message);
       console.error("Fetch Error:", err.response); // More detailed error logging
@@ -184,14 +226,16 @@ export const TestimonyManagement = () => {
   };
 
   useEffect(() => {
-    fetchTestimonials();
-  }, [page, statusFilter]);
+    if (userEmail) {
+      fetchTestimonials();
+    }
+  }, [page, statusFilter, userEmail]);
 
   const openModal = (testimonial = null) => {
     setCurrentTestimonial(
       testimonial || {
         name: "",
-        email: "",
+        email: userEmail || "", // Pre-fill with user's email
         profession: "",
         rating: 5,
         testimonial: "",
@@ -214,13 +258,19 @@ export const TestimonyManagement = () => {
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
+      // Ensure the testimonial is associated with the logged-in user
+      const testimonialToSubmit = {
+        ...currentTestimonial,
+        email: userEmail // Force the email to be the logged-in user's email
+      };
+
       if (currentTestimonial._id) {
         await testimonialService.updateTestimonialStatus(
           currentTestimonial._id,
           currentTestimonial.status
         );
       } else {
-        await testimonialService.createTestimonial(currentTestimonial);
+        await testimonialService.createTestimonial(testimonialToSubmit);
       }
       fetchTestimonials();
       closeModal();
@@ -363,21 +413,21 @@ export const TestimonyManagement = () => {
             >
               {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
             </button>
+            {userEmail && (
+              <div className="text-sm text-gray-600">
+                Showing your testimonials
+              </div>
+            )}
           </header>
           <div className=" mt-4 rounded-2xl bg-gray-50 sm:p-4 md:p-6">
             <ToastContainer position="top-right" autoClose={3000} />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex,
-              minus. Harum earum adipisci at quae a ab, ea laborum temporibus
-              pariatur? Consequuntur, ex aut reiciendis atque distinctio maxime
-              ullam ipsa?
-            </p>
+            
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <h3 className="text-2xl font-bold text-black">
-                Testimonial Management
+                Your Testimonials
               </h3>
-              <SearchTestimonialsModal />
+           
               <div className="flex flex-col sm:flex-row gap-3 sm:w-auto">
                 <button
                   onClick={() => openModal()}
@@ -393,7 +443,7 @@ export const TestimonyManagement = () => {
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white p-4 rounded-lg shadow">
                 <h4 className="text-sm font-medium text-gray-500">
-                  Total Testimonials
+                  Your Testimonials
                 </h4>
                 <p className="text-2xl font-bold text-black">
                   {totalTestimonials}
@@ -496,7 +546,7 @@ export const TestimonyManagement = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-black">
-                      No testimonials found
+                      You have no testimonials yet
                     </div>
                   )}
                 </div>
@@ -568,18 +618,6 @@ export const TestimonyManagement = () => {
                                 >
                                   <Delete fontSize="small" />
                                 </button>
-                                {test.status !== "approved" && (
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(test._id, "approved")
-                                    }
-                                    className="text-green-600 hover:text-green-900 p-1"
-                                    title="Approve"
-                                  >
-                                    <CheckCircle fontSize="small" />
-                                  </button>
-                                )}
-                               
                               </div>
                             </td>
                           </motion.tr>
@@ -590,7 +628,7 @@ export const TestimonyManagement = () => {
                             colSpan="7"
                             className="px-4 py-6 text-center text-black"
                           >
-                            No testimonials found
+                            You have no testimonials yet
                           </td>
                         </tr>
                       )}
@@ -660,7 +698,7 @@ export const TestimonyManagement = () => {
                     <div className="p-6">
                       <h2 className="text-xl font-bold mb-4 text-black">
                         {currentTestimonial._id
-                          ? `Edit Testimonial`
+                          ? `Edit Your Testimonial`
                           : "Add New Testimonial"}
                       </h2>
                       <div className="space-y-4">
@@ -684,10 +722,11 @@ export const TestimonyManagement = () => {
                           <input
                             type="email"
                             name="email"
-                            value={currentTestimonial.email}
+                            value={currentTestimonial.email || userEmail}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             required
+                            readOnly
                           />
                         </div>
                         <div>
@@ -748,24 +787,6 @@ export const TestimonyManagement = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                           />
                         </div>
-                        {currentTestimonial._id && (
-                          <div>
-                            <label className="block text-sm font-medium text-black mb-1">
-                              Status *
-                            </label>
-                            <select
-                              name="status"
-                              value={currentTestimonial.status}
-                              onChange={handleInputChange}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                              required
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="approved">Approved</option>
-                              <option value="rejected">Rejected</option>
-                            </select>
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
@@ -781,14 +802,12 @@ export const TestimonyManagement = () => {
                         disabled={
                           isProcessing ||
                           !currentTestimonial.name ||
-                          !currentTestimonial.email ||
                           !currentTestimonial.profession ||
                           !currentTestimonial.testimonial
                         }
                         className={`px-4 py-2 rounded-md text-white ${
                           isProcessing ||
                           !currentTestimonial.name ||
-                          !currentTestimonial.email ||
                           !currentTestimonial.profession ||
                           !currentTestimonial.testimonial
                             ? "bg-blue-400 cursor-not-allowed"

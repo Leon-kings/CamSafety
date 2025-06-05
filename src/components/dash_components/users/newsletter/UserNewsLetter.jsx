@@ -31,13 +31,13 @@ import { Link } from "react-router-dom";
 
 
 const navItems = [
-  { name: "Dashboard", icon: <DashboardIcon />, href: "/Dashboard" },
-  { name: "Orders", icon: <ShoppingCart />, href: "/7822289/2902" },
-  { name: "Messages", icon: <Message />, href: "/9723089/9820" },
-  { name: "Contacts", icon: <ContactMail />, href: "/1283782/6282" },
-  { name: "Users", icon: <PeopleIcon />, href: "/8032782/0209" },
-  { name: "Testimony", icon: <TextFields />, href: "/7822982/6728" },
-  { name: "NewsLetter", icon: <Subscriptions />, href: "/9783989/1689" },
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/37911' },
+  { name: 'Orders', icon: <ShoppingCart />, href: '/orders' },
+  { name: 'Messages', icon: <Message />, href: '/messages' },
+  { name: 'Contact', icon: <ContactMail />, href: '/reports' },
+  { name: 'Users', icon: <PeopleIcon />, href: '/90203/89382' },
+  { name: 'NewsLetter', icon: <Subscriptions />, href: '/92092/93082' },
+  { name: 'Testimony', icon: <TextFields />, href: '' },
 ];
 
 const API_URL = "https://camera-safety.onrender.com";
@@ -117,6 +117,7 @@ export const UserNewsLetterManagement = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loggedInEmail, setLoggedInEmail] = useState(""); // Add state for logged-in email
       // navbar
       const [sidebarOpen, setSidebarOpen] = useState(true);
       const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -138,6 +139,10 @@ export const UserNewsLetterManagement = () => {
       const data = await newsletterService.getSubscribers(page, 10);
       setSubscribers(data.subscribers);
       setTotalPages(data.totalPages);
+      
+      // Get logged-in user's email (you would replace this with your actual auth logic)
+      const userEmail = localStorage.getItem("userEmail"); // Example
+      setLoggedInEmail(userEmail);
     } catch (err) {
       setError(err.message);
       setSubscribers([]); // Ensure we always have an array
@@ -195,14 +200,12 @@ export const UserNewsLetterManagement = () => {
     }
   };
 
-  // Completely safe filtering with multiple fallbacks
+  // Filter subscribers to only show those matching the logged-in email
   const filteredSubscribers = (
     Array.isArray(subscribers) ? subscribers : []
   ).filter((subscriber) => {
     try {
-      return subscriber?.email
-        ?.toLowerCase()
-        .includes((searchQuery || "").toLowerCase());
+      return subscriber?.email?.toLowerCase() === loggedInEmail.toLowerCase();
     } catch {
       return false;
     }
@@ -407,9 +410,8 @@ export const UserNewsLetterManagement = () => {
             {/* Header and Search */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
               <h3 className="text-2xl font-bold text-black">
-                Subscriber Management
+                Your Newsletter Subscription
               </h3>
-
             </div>
 
             {/* Mobile Cards */}
@@ -468,9 +470,7 @@ export const UserNewsLetterManagement = () => {
                 ))
               ) : (
                 <div className="text-center py-8 text-black">
-                  {searchQuery
-                    ? "No matching subscribers found"
-                    : "No subscribers found"}
+                  No newsletter subscription found for your email
                 </div>
               )}
             </div>
@@ -538,9 +538,7 @@ export const UserNewsLetterManagement = () => {
                         colSpan="5"
                         className="px-4 py-6 text-center text-black"
                       >
-                        {searchQuery
-                          ? "No matching subscribers found"
-                          : "No subscribers found"}
+                        No newsletter subscription found for your email
                       </td>
                     </tr>
                   )}
@@ -548,45 +546,7 @@ export const UserNewsLetterManagement = () => {
               </table>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-black">
-                  Showing {(page - 1) * 10 + 1}-
-                  {Math.min(page * 10, subscribers.length)} of{" "}
-                  {subscribers.length} subscribers
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isProcessing}
-                    className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center ${
-                      page === 1
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-200 hover:bg-gray-300 text-black"
-                    }`}
-                  >
-                    <ArrowBack fontSize="small" />
-                    <span className="ml-1">Previous</span>
-                  </button>
-                  <span className="px-3 py-1 sm:px-4 sm:py-2 text-black">
-                    {page} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages || isProcessing}
-                    className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg flex items-center ${
-                      page === totalPages
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-200 hover:bg-gray-300 text-black"
-                    }`}
-                  >
-                    <span className="mr-1">Next</span>
-                    <ArrowForward fontSize="small" />
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Pagination - Removed since we're only showing user's subscription */}
           </div>
         </div>
       </div>

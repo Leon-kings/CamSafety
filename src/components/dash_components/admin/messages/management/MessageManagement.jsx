@@ -390,7 +390,7 @@ export const MessageManagement = () => {
                   <Add />
                 </button>
               </div>{" "}
-              <SearchMessagesModal API_URL="https://camera-safety.onrender.com/messages/890" />
+              
             </div>
             {/* Desktop Header */}
             <div className="hidden sm:flex justify-between items-center mb-6">

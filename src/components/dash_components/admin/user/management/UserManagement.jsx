@@ -94,12 +94,12 @@ const userService = {
 
   updateUserStatus: async (id, status) => {
     try {
-      const response = await axios.patch(
-        `${API_URL}/${id}/status`,
-        { status },
-        { timeout: 5000 }
+      const response = await axios.put(
+        `${API_URL}/status/${id}`,
+        { status }
       );
       toast.success("Status updated successfully!");
+      
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update status");

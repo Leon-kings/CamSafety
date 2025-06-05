@@ -62,45 +62,45 @@ export const Navbar = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await axios.post(`${API_URL}/users/login`, {
-        email: formData.email,
-        password: formData.password,
-      });
+  try {
+    const response = await axios.post(`${API_URL}/users/login`, {
+      email: formData.email,
+      password: formData.password,
+    });
 
-      // Store token and user data in localStorage
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      
-      setIsLoggedIn(true);
-      setIsAdmin(response.data.user?.status?.toLowerCase() === 'admin');
-      setOpenLogin(false);
-      toast.success("Login successful!");
+    // Store token, user data, and email in localStorage
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+    localStorage.setItem("userEmail", formData.email); // Save email separately
+    
+    setIsLoggedIn(true);
+    setIsAdmin(response.data.user?.status?.toLowerCase() === 'admin');
+    setOpenLogin(false);
+    toast.success("Login successful!");
 
-      // Navigate based on user status
-      const userStatus = response.data.user?.status?.toLowerCase();
-      if (userStatus === 'admin') {
-        navigate('/Dashboard');
-      } else if (userStatus === 'user') {
-        navigate('/37911');
-      } else {
-        navigate('/');
-      }
-
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
+    // Navigate based on user status
+    const userStatus = response.data.user?.status?.toLowerCase();
+    if (userStatus === 'admin') {
+      navigate('/Dashboard');
+    } else if (userStatus === 'user') {
+      navigate('/37911');
+    } else {
+      navigate('/');
     }
-  };
 
+  } catch (error) {
+    console.error("Login error:", error);
+    toast.error(
+      error.response?.data?.message || "Login failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   const handleRegister = async (e) => {
     e.preventDefault();
 

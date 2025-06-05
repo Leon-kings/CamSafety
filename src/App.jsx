@@ -21,6 +21,9 @@ import { OrderManagement } from "./components/dash_components/admin/orders/manag
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { UserNewsLetterManagement } from "./components/dash_components/users/newsletter/UserNewsLetter";
 import { UserMessageManagement } from "./components/dash_components/users/messages/UserMessageManagement";
+import { UserContactManagement } from "./components/dash_components/users/contacts/UserContact";
+import { UserTestimonyManagement } from "./components/dash_components/users/testimony/UserTestimony";
+import { UserOrderManagement } from "./components/dash_components/users/orders/UserOrders";
 // user
 
 
@@ -84,8 +87,11 @@ export default function App() {
         <Route path="/7822289/2902" element={<OrderManagement />} />
         {/*  */}
         <Route path="/37911" element={<UserDashboard />} />
-        <Route path="/92092" element={<UserNewsLetterManagement />} />
-        <Route path="/90203" element={<UserMessageManagement />} />
+        <Route path="/92092/93082" element={<UserNewsLetterManagement />} />
+        <Route path="/90203/89382" element={<UserMessageManagement />} />
+        <Route path="/78320/23943" element={<UserContactManagement />} />
+        <Route path="/43272/37191" element={<UserTestimonyManagement />} />
+        <Route path="/78631/83672" element={<UserOrderManagement />} />
         {/*  */}
       </Routes>
       <Footer />
